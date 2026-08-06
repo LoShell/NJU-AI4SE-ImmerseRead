@@ -108,8 +108,8 @@ The backend skeleton already exists under `backend/` and must be treated as user
 
 Before executing Task 1, verify these local tools are available:
 
-- Node.js 22 or newer: `node --version`.
-- npm 10 or newer: `npm --version`.
+- Node.js 22 or newer: `node --version`. In Codex Desktop, the bundled Node at `C:\Users\JHZ\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe` is acceptable.
+- npm 10 or newer or pnpm 10 or newer: `npm --version` or `pnpm --version`. In this workspace, use bundled pnpm at `C:\Users\JHZ\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd` if system npm is too old.
 - Java 17 or newer: `java --version`.
 - Maven 3.9 or the project Maven wrapper: `mvn --version` or `backend/mvnw --version`.
 - Git: `git --version`.
@@ -141,7 +141,7 @@ If a tool is missing, stop and record the blocker in `AGENT_LOG.md`; do not gues
 
 **Interfaces:**
 
-- Produces frontend command: `npm run test`, `npm run build`, `npm run dev`.
+- Produces frontend command: `npm run test`, `npm run build`, `npm run dev`, or equivalent `pnpm test`, `pnpm build`, `pnpm dev` when using pnpm.
 - Produces backend command: `./mvnw test` or `mvn test`.
 - Produces backend endpoint: `GET /api/health`.
 - Produces environment variables: `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL`.
@@ -193,7 +193,7 @@ describe("App", () => {
 
 Run: `cd frontend && npm run test -- App.test.tsx`
 
-Expected: FAIL because `App.tsx` does not render the required product shell yet. If the command fails because dependencies are not installed, run `npm install` and repeat the same test command.
+Expected: FAIL because `App.tsx` does not render the required product shell yet. If the command fails because dependencies are not installed, run `npm install` or `pnpm install`, then repeat the same test command with the chosen package manager.
 
 - [ ] **Step 4: Implement minimal App component**
 
