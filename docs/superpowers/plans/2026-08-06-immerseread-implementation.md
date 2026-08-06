@@ -135,7 +135,7 @@ If a tool is missing, stop and record the blocker in `AGENT_LOG.md`; do not gues
 - Modify: `backend/src/main/java/cn/immerseread/health/HealthController.java`
 - Create: `backend/src/test/java/cn/immerseread/health/HealthControllerTest.java`
 - Delete if still present: `backend/src/main/java/cn/immerseread/llm/health/HealthControllerTest.java`
-- Create: `.gitignore`
+- Modify: `.gitignore`
 - Modify: `backend/.env.example`
 - Modify: `README.md`
 
