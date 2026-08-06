@@ -1,411 +1,412 @@
-# ImmerseRead Design Spec
+# ImmerseRead 设计规格说明
 
-Date: 2026-08-06
+日期：2026-08-06
 
-## 1. Problem Statement
+## 1. 问题陈述
 
-ImmerseRead is a local-first immersive TXT novel reader for web-novel and genre-fiction readers. It solves three common reading problems:
+ImmerseRead 是一个面向小说和网文读者的本地优先沉浸式 TXT 阅读器。它要解决三个真实问题：
 
-- TXT novel files are often messy: chapter headings may be inconsistent, encoding may vary, and readers still need a comfortable reading surface.
-- Many readers enjoy reading with background music, but matching music to the current scene is manual and interrupts immersion.
-- Readers often want a companion to recall prior plot, discuss suspicious characters, and react emotionally, but ordinary LLM chat can feel tool-like or can accidentally spoil future content.
+- TXT 小说文件格式经常不稳定：章节标题不统一，编码可能不同，读者需要先整理文本才能舒服阅读。
+- 很多读者喜欢配合 BGM 阅读，但手动挑选适合当前剧情氛围的音乐会打断沉浸感。
+- 读者常常想找一个“懂当前剧情”的书友一起吐槽、回忆前情、猜后续，但普通 LLM 容易回答得像工具，也可能不小心剧透未读内容。
 
-The target users are novel and web-novel readers who own local TXT files and want a richer personal reading experience without using an online novel catalog. The product is worth building because it combines a practical reader, mood-aware BGM recommendation, lightweight annotation, and a spoiler-safe LLM companion into one coherent reading workflow.
+目标用户是拥有本地 TXT 小说文件、偏好网文或类型小说阅读体验的读者。项目值得做，是因为它不是单纯的阅读器，也不是严肃文学分析工具，而是把本地阅读、氛围 BGM、轻量批注和不剧透的 LLM 书友整合成一个完整的沉浸式阅读流程。
 
-The core product promise:
+核心产品承诺：
 
-> Upload your own TXT novel, read locally with atmosphere-aware BGM, and chat with a spoiler-safe AI reading buddy that only knows what you have already read.
+> 上传自己的 TXT 小说，在本地阅读；系统根据当前剧情推荐氛围 BGM，并提供一个只知道你已读内容的 AI 书搭子陪你吐槽、回忆和一起猜。
 
-## 2. User Stories
+## 2. 用户故事
 
-### Story 1: Upload TXT and Start Reading
+### 用户故事 1：上传 TXT 并开始阅读
 
-As a novel reader, I want to upload my own TXT novel and have the app identify chapters or create readable chunks, so that I can start reading without manually cleaning the file.
+作为小说读者，我希望上传自己的 TXT 小说后，系统能够自动识别章节或生成阅读片段，这样我不用手动整理格式就能开始阅读。
 
-Acceptance criteria:
+验收标准：
 
-- The app accepts `.txt` uploads.
-- Common chapter headings such as `第一章`, `第1章`, `卷一`, `Chapter 1`, and numbered headings are recognized.
-- If chapter recognition is unreliable, the app falls back to fixed-size readable chunks.
-- Parsed text can be opened in the reader.
-- Text order and content are preserved.
+- 应用支持上传 `.txt` 文件。
+- 能识别常见章节格式，例如 `第一章`、`第1章`、`卷一`、`Chapter 1` 和数字编号标题。
+- 章节识别不可靠时，系统按固定字数生成阅读片段。
+- 解析完成后可以进入阅读界面。
+- 原文内容不丢失、不乱序。
 
-### Story 2: Read Comfortably for Long Sessions
+### 用户故事 2：长时间舒适阅读
 
-As a novel reader, I want to adjust typography, theme, and reading width, so that I can read comfortably for long periods.
+作为小说读者，我希望可以调整字号、行高、主题和阅读宽度，这样我可以长时间阅读而不疲劳。
 
-Acceptance criteria:
+验收标准：
 
-- The reader supports font size, line height, reading width, and theme settings.
-- Reading progress is saved locally.
-- Preferences persist after refresh.
-- Text remains readable on desktop and mobile layouts.
+- 阅读器支持字号、行高、阅读宽度和主题设置。
+- 阅读进度保存在本地。
+- 刷新页面后阅读偏好仍然保留。
+- 桌面端和移动端文本都不会溢出或重叠。
 
-### Story 3: Get BGM Recommendations for the Current Scene
+### 用户故事 3：根据当前剧情获得 BGM 推荐
 
-As a novel reader, I want the app to recommend BGM based on the current segment atmosphere, so that I can enter the story mood faster.
+作为小说读者，我希望系统根据当前章节或片段的氛围推荐合适的 BGM，这样我可以更快进入故事状态。
 
-Acceptance criteria:
+验收标准：
 
-- The app can generate an atmosphere profile for the current segment.
-- The BGM matcher returns at least one matching track when tracks are available.
-- Recommendations include a short reason.
-- The app asks for confirmation before switching tracks.
-- If LLM analysis fails, the app falls back to default recommendations.
+- 当前片段可以生成氛围标签。
+- 当存在可用曲目时，BGM 推荐器至少返回一首推荐曲目。
+- 推荐结果包含简短理由。
+- 切换 BGM 前需要用户确认。
+- LLM 氛围分析失败时，系统可以回退到默认推荐。
 
-### Story 4: Import a Private BGM Library
+### 用户故事 4：导入私人 BGM 音频库
 
-As a novel reader, I want to import my own local music files and tag them, so that I can build a private reading playlist.
+作为小说读者，我希望导入自己的本地音乐并添加氛围标签，这样我可以建立私人阅读歌单。
 
-Acceptance criteria:
+验收标准：
 
-- The app accepts `mp3`, `wav`, and `ogg` uploads.
-- Uploaded audio stays in browser-local storage.
-- Users can edit title, mood tags, scene tags, and intensity metadata.
-- Unsupported formats produce a clear error.
-- Playback supports play, pause, track switching, and lock-current-track.
+- 支持上传 `mp3`、`wav`、`ogg` 音频。
+- 上传音频保存在浏览器本地存储中，不发送到后端。
+- 用户可以编辑曲名、情绪标签、场景标签和强度等元数据。
+- 不支持的音频格式会给出清晰错误提示。
+- 播放器支持播放、暂停、切换和锁定当前曲目。
 
-### Story 5: Create Lightweight Annotations
+### 用户故事 5：创建轻量批注
 
-As a novel reader, I want to highlight selected text and write a short note, so that I can keep my immediate reading thoughts.
+作为小说读者，我希望选中文本后高亮并写一句想法，这样我可以记录阅读时的即时感受。
 
-Acceptance criteria:
+验收标准：
 
-- Users can select text and create a highlight.
-- Users can attach a short note to the highlight.
-- Annotations are bound to book, segment, and text range.
-- Highlights are restored after reopening the book.
-- Deleting an annotation removes its highlight.
+- 用户可以选中文本创建高亮。
+- 用户可以给高亮添加短批注。
+- 批注绑定到书籍、片段和文本范围。
+- 重新打开书籍后高亮可以恢复。
+- 删除批注后对应高亮消失。
 
-### Story 6: Ask the Companion About an Annotation
+### 用户故事 6：带着批注询问书搭子
 
-As a novel reader, I want to send a selected passage and my note to the AI reading buddy, so that I can discuss my own reading reaction without copying text manually.
+作为小说读者，我希望把选中文本和自己的批注一键带入书搭子聊天，这样我可以围绕阅读时的想法继续讨论，而不需要复制粘贴原文。
 
-Acceptance criteria:
+验收标准：
 
-- Each annotation has an action to ask the companion.
-- The chat request includes selected text, the annotation note, the current segment, and spoiler-safe context.
-- The response is linked to the current book and segment.
-- Chat history is restored locally.
+- 每条批注都有“问书搭子”的入口。
+- 聊天请求包含选中文本、批注内容、当前片段和防剧透上下文。
+- 回复与当前书籍和片段关联。
+- 聊天记录保存在本地，并能恢复。
 
-### Story 7: Chat With a Spoiler-Safe Reading Buddy
+### 用户故事 7：和不剧透的书搭子聊天
 
-As a novel reader, I want the AI companion to answer only from what I have already read, so that I can safely ask questions, complain, recall plot, and guess future developments.
+作为小说读者，我希望 AI 书搭子只基于我已经读到的位置回答问题，这样我可以放心吐槽、回忆和猜剧情，而不会被剧透。
 
-Acceptance criteria:
+验收标准：
 
-- LLM requests never include text after the current reading position.
-- High-risk future-oriented questions are answered only from read-so-far evidence.
-- Default responses are short, usually 1-4 sentences.
-- The companion uses a casual web-novel-reader tone rather than academic analysis.
-- A test novel with hidden future answers proves that unread answers are not included in the LLM payload.
+- LLM 请求不包含当前阅读位置之后的正文。
+- 面对高剧透风险问题时，回答只基于已读线索。
+- 默认回复较短，通常为 1-4 句。
+- 语气像轻松的网文书友，而不是严肃文学评论。
+- 使用测试小说验证：未读章节中的答案不会进入 LLM 请求上下文。
 
-## 3. Functional Specification
+## 3. 功能规约
 
-### 3.1 TXT Parsing and Reader Core
+### 3.1 TXT 解析与阅读核心
 
-Input:
+输入：
 
-- User-uploaded `.txt` file.
-- Optional user-selected encoding if automatic decoding fails.
+- 用户上传的 `.txt` 文件。
+- 当自动解码失败时，用户手动选择的编码。
 
-Behavior:
+行为：
 
-- Decode the text, normalize line endings, and preserve original character order.
-- Try chapter recognition with common Chinese and English heading patterns.
-- If recognized chapters are fewer than the reliability threshold, split text into chunks of about 3000-5000 Chinese characters, preferring paragraph boundaries.
-- Create `Book`, `Segment`, and initial `ReadingProgress` records in browser-local storage.
+- 解码文本，规范换行，同时保留原始字符顺序。
+- 使用常见中文和英文标题模式尝试章节识别。
+- 如果识别出的章节数量低于可靠阈值，则按约 3000-5000 个中文字符切成阅读片段，并尽量在段落边界切分。
+- 在浏览器本地存储中创建 `Book`、`Segment` 和初始 `ReadingProgress` 记录。
 
-Output:
+输出：
 
-- A local book record with ordered segments.
-- A reader-ready text structure.
+- 一本本地书籍记录。
+- 一组有序章节或阅读片段。
+- 可直接进入阅读器的文本结构。
 
-Boundary conditions:
+边界条件：
 
-- No online book search or download.
-- First version supports TXT only, not EPUB or PDF.
-- Very large files should be parsed incrementally or show progress.
+- 不提供在线小说搜索或下载。
+- 第一版只支持 TXT，不支持 EPUB 或 PDF。
+- 大文件需要有进度反馈，不能让界面长时间无响应。
 
-Error handling:
+错误处理：
 
-- Encoding failure asks the user to choose UTF-8 or GBK.
-- Empty files are rejected with a clear message.
-- Parser failure falls back to fixed-size chunks.
+- 编码识别失败时，让用户选择 UTF-8 或 GBK。
+- 空文件直接拒绝，并显示清晰提示。
+- 章节解析失败时，自动回退到固定字数切片。
 
-### 3.2 Reader UI
+### 3.2 阅读器 UI
 
-Input:
+输入：
 
-- Book and segment records.
-- User reading preferences.
+- 书籍和片段记录。
+- 用户阅读偏好。
 
-Behavior:
+行为：
 
-- Render the current segment in a scroll-based reading layout.
-- Persist reading position and preferences.
-- Provide low-distraction controls for typography, theme, BGM, annotations, and companion chat.
+- 使用滚动式阅读界面渲染当前片段。
+- 保存阅读位置和阅读偏好。
+- 提供低打扰的字号、行高、主题、BGM、批注和书搭子入口。
 
-Output:
+输出：
 
-- A responsive reading experience.
-- Updated local progress and preferences.
+- 响应式沉浸阅读界面。
+- 更新后的本地阅读进度和偏好。
 
-Boundary conditions:
+边界条件：
 
-- Simulated page-turn animation is not required for the first version.
-- The UI should not become a dashboard or knowledge-management workspace.
+- 第一版不要求仿真翻页动画。
+- 阅读界面不做成后台仪表盘，也不做成知识管理工作区。
 
-Error handling:
+错误处理：
 
-- Missing segment data shows a recoverable local-library error.
-- Storage write failure warns users that progress may not persist.
+- 片段数据缺失时显示可恢复的本地书库错误。
+- 本地存储写入失败时提示用户进度可能无法保存。
 
-### 3.3 Atmosphere Analysis
+### 3.3 氛围分析
 
-Input:
+输入：
 
-- Current segment text, limited by payload size.
+- 当前章节或阅读片段文本。
 
-Behavior:
+行为：
 
-- Send one backend request to analyze segment atmosphere.
-- Backend calls the LLM provider and asks for structured JSON.
-- Validate and normalize the JSON response.
+- 前端向后端发送一次氛围分析请求。
+- Spring Boot 后端调用 LLM，要求返回结构化 JSON。
+- 后端校验并规范化 JSON 结果。
 
-Output:
+输出：
 
-- `AtmosphereProfile` with moods, scenes, pace, intensity, energy, darkness, warmth, tags, and a chapter-end prompt.
+- `AtmosphereProfile`，包含情绪、场景、节奏、强度、能量、阴暗度、温暖度、标签和章节结束轻提示。
 
-Boundary conditions:
+边界条件：
 
-- The analysis is single-shot and user or segment triggered.
-- It does not analyze unread future content for chat.
-- It does not create an autonomous loop.
+- 氛围分析是由用户或片段进入行为触发的单次请求。
+- 不为了聊天分析未读章节。
+- 不形成自主循环，因此不构成 agent。
 
-Error handling:
+错误处理：
 
-- Invalid JSON triggers one repair or retry path.
-- Repeated failure returns a fallback neutral profile.
+- JSON 解析失败时进行一次修复或重试。
+- 多次失败后返回中性默认氛围。
 
-### 3.4 BGM Library and Recommendation
+### 3.4 BGM 音频库与推荐
 
-Input:
+输入：
 
-- Built-in royalty-free or self-produced demo BGM metadata.
-- Optional user-uploaded local audio and metadata.
-- Current `AtmosphereProfile`.
+- 内置的免版权或自制演示 BGM 元数据。
+- 用户上传的本地音频和元数据。
+- 当前片段的 `AtmosphereProfile`。
 
-Behavior:
+行为：
 
-- Store uploaded audio locally.
-- Match BGM tracks by mood overlap, scene overlap, and numeric distance across energy, darkness, and warmth.
-- Recommend 1-3 tracks with reasons.
-- Ask user confirmation before switching tracks.
+- 将用户上传的音频保存在本地。
+- 根据情绪标签重合、场景标签重合，以及 energy、darkness、warmth 数值距离计算匹配分。
+- 推荐 1-3 首 BGM，并给出简短理由。
+- 切换曲目前请求用户确认。
 
-Output:
+输出：
 
-- Ranked BGM recommendations.
-- Playback state.
+- 排序后的 BGM 推荐结果。
+- 当前播放状态。
 
-Boundary conditions:
+边界条件：
 
-- No music search, download, public sharing, or cloud sync in the first version.
-- Uploaded audio is treated as the user's private local library.
+- 第一版不提供音乐搜索、下载、公开分享或云同步。
+- 用户上传音频被视为私人本地音频库。
 
-Error handling:
+错误处理：
 
-- Unsupported audio formats are rejected.
-- Missing audio file references mark tracks as unavailable.
-- No matching tracks returns a default ambient option.
+- 不支持的音频格式直接拒绝。
+- 音频文件引用丢失时，将曲目标记为不可用。
+- 没有匹配曲目时返回默认环境音选项。
 
-### 3.5 Annotation
+### 3.5 批注
 
-Input:
+输入：
 
-- User text selection.
-- Optional note text and color.
+- 用户选中的文本。
+- 可选的批注内容和颜色。
 
-Behavior:
+行为：
 
-- Create highlights bound to stable text ranges.
-- Store annotations locally.
-- Allow users to send annotation context to the companion.
+- 创建绑定稳定文本范围的高亮。
+- 将批注保存在本地。
+- 允许用户把批注内容和原文发送给书搭子。
 
-Output:
+输出：
 
-- Restorable highlights.
-- Annotation records.
-- Optional chat request seed.
+- 可恢复的高亮。
+- 批注记录。
+- 可选的聊天请求上下文。
 
-Boundary conditions:
+边界条件：
 
-- No complex backlink system, graph view, or Obsidian-like knowledge base in the first version.
+- 第一版不做复杂标签系统、双链笔记、关系图或类似 Obsidian 的知识库。
 
-Error handling:
+错误处理：
 
-- Invalid empty selections are ignored.
-- If text range cannot be restored exactly, show a warning and attempt fuzzy matching by selected text.
+- 空选择不创建批注。
+- 如果文本范围无法精确恢复，系统提示用户，并尝试用选中文本做模糊匹配。
 
-### 3.6 Spoiler Guard
+### 3.6 防剧透模块
 
-Input:
+输入：
 
-- `Book`, `Segment`, `ReadingProgress`, selected text, annotation, user question, and requested context window.
+- `Book`、`Segment`、`ReadingProgress`、选中文本、批注、用户问题和请求的上下文窗口。
 
-Behavior:
+行为：
 
-- Compute the maximum allowed character offset from reading progress.
-- Reject or trim any context beyond that offset.
-- Classify spoiler risk with keywords such as later, ending, truth, murderer, final boss, betrayal, and Chinese equivalents.
-- Add spoiler-safe instruction metadata to the LLM request.
-- Record context range metadata for debugging and tests.
+- 根据阅读进度计算最大允许字符位置。
+- 拒绝或裁剪所有超过该位置的上下文。
+- 使用关键词识别剧透风险，例如“后来”“结局”“真相”“凶手”“最终 boss”“背叛”等。
+- 为 LLM 请求附加防剧透指令和上下文范围元数据。
+- 保存上下文范围元数据，便于测试和调试。
 
-Output:
+输出：
 
-- `AllowedContext` for the companion.
-- `spoilerRisk` classification.
-- Context range metadata.
+- 允许发送给 LLM 的已读上下文。
+- `spoilerRisk` 风险分类。
+- 上下文起止范围元数据。
 
-Boundary conditions:
+边界条件：
 
-- Prompting alone is not considered sufficient; unread text must not enter the request.
-- The first version defaults to strict spoiler prevention.
+- 只靠提示词不算防剧透；未读文本必须从工程上不进入请求。
+- 第一版默认严格防剧透。
 
-Error handling:
+错误处理：
 
-- If selected text is beyond reading progress, reject the chat request with a clear message.
-- If no context is available, answer from the selected text and current user question only.
+- 如果选中文本超过当前阅读进度，拒绝聊天请求并提示原因。
+- 如果没有可用上下文，只基于选中文本和用户问题回答。
 
-### 3.7 Reading Companion
+### 3.7 书搭子 LLM 聊天
 
-Input:
+输入：
 
-- User question.
-- Optional selected text and annotation.
-- Spoiler-safe allowed context.
-- Current mode, defaulting to casual reading buddy.
+- 用户问题。
+- 可选的选中文本和批注。
+- 经过防剧透模块裁剪后的上下文。
+- 当前模式，默认是“同好型书友”。
 
-Behavior:
+行为：
 
-- Construct a single LLM chat request through the Spring Boot backend.
-- Use a light-persona companion named "书搭子" by default.
-- Keep default responses short, natural, and web-novel-reader friendly.
-- Support recall, complaining, guessing, passage explanation, current-motivation discussion, and spoiler-safe Q&A.
+- 通过 Spring Boot 后端构造单次 LLM 聊天请求。
+- 默认使用轻人设“书搭子”。
+- 默认回复短、自然、有网文读者同好感。
+- 支持回忆前情、吐槽、一起猜、解释当前段落、分析当前人物动机和防剧透问答。
 
-Output:
+输出：
 
-- Assistant response.
-- Local `ChatMessage` records.
+- 书搭子的回复。
+- 保存在本地的 `ChatMessage` 记录。
 
-Boundary conditions:
+边界条件：
 
-- No autonomous planning.
-- No tool calling by the LLM.
-- No automatic multi-step loop.
-- No web search for novel content.
+- 不做自主规划。
+- 不让 LLM 自主调用工具。
+- 不做自动多步循环。
+- 不联网查询小说内容。
 
-Error handling:
+错误处理：
 
-- Missing API key disables LLM features but leaves reader, annotations, and BGM playback available.
-- Provider failure returns a friendly retry message.
+- 缺少 API key 时禁用 LLM 功能，但阅读、批注和 BGM 本地功能仍然可用。
+- LLM 供应商失败时返回友好的重试提示。
 
-### 3.8 Spring Boot LLM Proxy
+### 3.8 Spring Boot LLM 代理
 
-Input:
+输入：
 
-- Atmosphere or chat request from frontend.
-- Environment variables for provider configuration.
+- 前端发来的聊天或氛围分析请求。
+- 环境变量中的 LLM 供应商配置。
 
-Behavior:
+行为：
 
-- Validate request schema and size.
-- Load API key from environment variables.
-- Call OpenAI or an OpenAI-compatible endpoint through an adapter.
-- Return normalized responses.
-- Log only request id, status, duration, model, and character counts.
+- 校验请求结构和大小。
+- 从环境变量读取 API key。
+- 通过适配器调用 OpenAI 或 OpenAI-compatible 接口。
+- 返回规范化后的结果。
+- 日志只记录 request id、状态、耗时、模型和字符数。
 
-Output:
+输出：
 
-- Chat text or structured atmosphere profile.
+- 聊天文本或结构化氛围分析结果。
 
-Boundary conditions:
+边界条件：
 
-- Backend does not persist novel text, annotations, BGM files, or chat history in the first version.
-- Backend does not expose provider credentials to frontend.
+- 第一版后端不持久化小说正文、批注、BGM 文件或聊天历史。
+- 后端不向前端暴露供应商凭据。
 
-Error handling:
+错误处理：
 
-- Missing credentials return a typed disabled-feature response.
-- Provider errors are sanitized.
-- Oversized requests are rejected.
+- 缺少凭据时返回类型明确的功能禁用响应。
+- 供应商错误需要脱敏后再返回。
+- 请求过大时直接拒绝。
 
-## 4. Non-Functional Requirements
+## 4. 非功能性需求
 
-### Performance
+### 4.1 性能
 
-- TXT files up to 10 MB should parse within an acceptable interactive time on a typical laptop.
-- Parsing large files should not permanently block the UI; progress feedback is required if parsing takes noticeable time.
-- Reader scrolling should remain smooth for long segments.
-- LLM payloads should be size-limited and context-window aware.
+- 10 MB 以内的 TXT 文件应能在普通笔记本上以可接受的交互时间完成解析。
+- 大文件解析时需要进度反馈，不能让 UI 长时间无响应。
+- 长片段滚动阅读应保持流畅。
+- LLM 请求需要限制上下文大小，避免超出模型窗口或造成过高延迟。
 
-### Security and Credential Threat Model
+### 4.2 安全与凭据威胁模型
 
-Assets:
+需要保护的资产：
 
-- LLM provider API key.
-- User-uploaded TXT content.
-- User annotations and chat history.
-- User-uploaded BGM files.
+- LLM 供应商 API key。
+- 用户上传的 TXT 小说内容。
+- 用户批注和聊天记录。
+- 用户上传的 BGM 音频。
 
-Threats and mitigations:
+威胁与缓解：
 
-- API key committed to repository: use `.env`, `.env.example`, and `.gitignore`.
-- API key exposed to browser: route all LLM calls through Spring Boot.
-- API key leaked in errors: sanitize provider errors before returning responses.
-- Novel text leaked through logs: log metadata only, never raw text.
-- Novel text centralized on server: keep books, annotations, progress, chat, and BGM local by default.
-- Unread content leaked to LLM: enforce `SpoilerGuard` context trimming before requests and verify request ranges.
-- Oversized prompt abuse: backend request body and character limits.
+- API key 被提交到仓库：使用 `.env`、`.env.example` 和 `.gitignore`。
+- API key 暴露给浏览器：所有 LLM 请求都经过 Spring Boot 后端。
+- 错误响应泄露 API key：后端对供应商错误做脱敏处理。
+- 日志泄露小说正文：日志只记录元数据，不记录原文。
+- 小说文本被集中上传服务器：默认把书籍、批注、进度、聊天和 BGM 保存在浏览器本地。
+- 未读内容泄露给 LLM：前端防剧透模块裁剪上下文，并用测试验证请求范围。
+- 请求体过大导致资源消耗：后端限制请求体大小和字符数。
 
-Credential lifecycle:
+凭据生命周期：
 
-- Input: deployment operator writes `OPENAI_API_KEY` into `.env` or target machine environment variables.
-- Update: change environment variable and restart backend.
-- Clear: remove key and restart backend; LLM features become disabled.
-- Validation: backend exposes health status that reports LLM configured/unconfigured without revealing key.
+- 录入：部署者复制 `.env.example` 为 `.env`，填写 `OPENAI_API_KEY`。
+- 更新：修改 `.env` 或目标机器环境变量后重启后端。
+- 清除：删除 key 后重启后端，LLM 功能进入禁用状态。
+- 验证：后端健康检查只报告 LLM 是否已配置，不返回 key 内容。
 
-### Usability
+### 4.3 可用性
 
-- The first screen after opening a book is the reader, not a marketing page.
-- AI and BGM controls should stay low-distraction.
-- Default companion replies are short.
-- Chapter-end prompts are optional invitations, not interruptions.
+- 打开书籍后的第一屏是阅读器，而不是营销页。
+- AI 和 BGM 控件保持低打扰。
+- 书搭子默认短回复。
+- 章节结束提示只是可选入口，不主动打断阅读。
 
-### Observability
+### 4.4 可观测性
 
-- Backend logs request id, endpoint, status, duration, provider model, input character count, and error category.
-- Frontend may show local debug metadata for context ranges during development.
-- Logs must not include API keys or raw novel text.
+- 后端记录 request id、接口名、状态、耗时、模型、输入字符数和错误类别。
+- 开发模式下，前端可以显示本次 LLM 请求的上下文范围，用于调试防剧透。
+- 日志不得包含 API key 或小说原文。
 
-### Reliability
+### 4.5 可靠性
 
-- Reading, annotations, and local BGM continue to work without LLM credentials.
-- Atmosphere analysis failure falls back to neutral BGM recommendation.
-- Local storage errors are surfaced clearly.
+- 没有 LLM 凭据时，阅读、批注和本地 BGM 仍然可用。
+- 氛围分析失败时，BGM 推荐回退到中性默认值。
+- 本地存储失败时要明确提示用户。
 
-## 5. System Architecture
+## 5. 系统架构
 
 ```mermaid
 flowchart LR
-    U["User"] --> FE["React + TypeScript Frontend"]
-    FE --> IDB["Browser IndexedDB"]
-    FE --> Parser["TXT Parser"]
-    FE --> Reader["Reader UI"]
-    FE --> BGM["BGM Player and Matcher"]
-    FE --> SG["SpoilerGuard"]
-    FE --> API["Spring Boot LLM Proxy"]
-    API --> LLM["OpenAI or Compatible LLM API"]
+    U["用户"] --> FE["React + TypeScript 前端"]
+    FE --> IDB["浏览器 IndexedDB"]
+    FE --> Parser["TXT 解析器"]
+    FE --> Reader["阅读器 UI"]
+    FE --> BGM["BGM 播放器与推荐器"]
+    FE --> SG["防剧透模块"]
+    FE --> API["Spring Boot LLM 代理"]
+    API --> LLM["OpenAI 或兼容 LLM API"]
 
     Parser --> IDB
     Reader --> IDB
@@ -413,185 +414,185 @@ flowchart LR
     SG --> API
 ```
 
-### Components
+### 5.1 组件说明
 
-- Frontend web app: product UI, local parsing, local storage, BGM playback, annotations, spoiler-safe context construction.
-- Spring Boot backend: LLM proxy, credential isolation, request validation, response normalization, sanitized logs.
-- Browser IndexedDB: local persistence for books, segments, progress, annotations, chat messages, atmosphere profiles, BGM metadata, and uploaded audio blobs.
-- External LLM provider: single-shot atmosphere analysis and single-shot companion responses.
+- 前端 Web 应用：负责产品 UI、本地解析、本地存储、BGM 播放、批注和防剧透上下文构造。
+- Spring Boot 后端：负责 LLM 代理、凭据隔离、请求校验、响应规范化和脱敏日志。
+- 浏览器 IndexedDB：本地保存书籍、片段、进度、批注、聊天记录、氛围标签、BGM 元数据和上传音频。
+- 外部 LLM 供应商：提供单次氛围分析和单次书搭子回复。
 
-### Main Data Flows
+### 5.2 主要数据流
 
-TXT upload:
-
-```text
-User uploads TXT
--> frontend decodes text
--> chapter parser runs
--> fallback chunking if needed
--> book and segments saved to IndexedDB
--> reader opens
-```
-
-Atmosphere analysis:
+TXT 上传：
 
 ```text
-Current segment text
--> frontend calls /api/llm/atmosphere
--> backend calls LLM once
--> backend validates structured JSON
--> profile saved locally
--> BGM matcher recommends tracks
+用户上传 TXT
+-> 前端解码文本
+-> 章节解析器运行
+-> 必要时回退到固定切片
+-> 书籍和片段保存到 IndexedDB
+-> 打开阅读器
 ```
 
-Companion chat:
+氛围分析：
 
 ```text
-User asks question or sends annotation
--> SpoilerGuard builds allowed context
--> frontend calls /api/llm/chat
--> backend validates and calls LLM once
--> response saved to local chat history
+当前片段文本
+-> 前端调用 /api/llm/atmosphere
+-> 后端单次调用 LLM
+-> 后端校验结构化 JSON
+-> 氛围标签保存到本地
+-> BGM 推荐器给出曲目
 ```
 
-Annotation-to-chat:
+书搭子聊天：
 
 ```text
-User highlights text and writes note
--> annotation saved locally
--> user clicks "ask companion"
--> selected text and note join spoiler-safe chat context
+用户提问或发送批注
+-> 防剧透模块构造已读上下文
+-> 前端调用 /api/llm/chat
+-> 后端校验并单次调用 LLM
+-> 回复保存到本地聊天记录
 ```
 
-### External Dependencies
+批注带入聊天：
 
-- OpenAI API or OpenAI-compatible endpoint.
-- Browser file APIs for TXT and audio import.
-- Browser IndexedDB for local storage.
-- Docker for distribution.
+```text
+用户高亮文本并写批注
+-> 批注保存到本地
+-> 用户点击“问书搭子”
+-> 选中文本和批注进入防剧透聊天上下文
+```
 
-## 6. Data Model
+### 5.3 外部依赖
 
-### Book
+- OpenAI API 或 OpenAI-compatible 接口。
+- 浏览器 File API，用于 TXT 和音频导入。
+- 浏览器 IndexedDB，用于本地持久化。
+- Docker，用于课程分发与冷启动验证。
 
-- `id`: string, primary key.
-- `title`: string.
-- `author`: optional string.
-- `sourceFileName`: string.
-- `createdAt`: timestamp.
-- `updatedAt`: timestamp.
-- `totalChars`: number.
-- `parserVersion`: string.
+## 6. 数据模型
 
-### Segment
+### 6.1 Book
 
-- `id`: string, primary key.
-- `bookId`: string.
-- `index`: number.
-- `title`: string.
-- `startChar`: number.
-- `endChar`: number.
-- `text`: string.
-- `type`: `chapter` or `chunk`.
-- `parseConfidence`: `high`, `medium`, or `low`.
-- `atmosphereStatus`: `pending`, `ready`, or `failed`.
+- `id`：字符串，主键。
+- `title`：书名。
+- `author`：可选作者。
+- `sourceFileName`：原始文件名。
+- `createdAt`：创建时间。
+- `updatedAt`：更新时间。
+- `totalChars`：总字符数。
+- `parserVersion`：解析器版本。
 
-Constraints:
+### 6.2 Segment
 
-- Segments for a book must be ordered and non-overlapping.
-- `startChar < endChar`.
+- `id`：字符串，主键。
+- `bookId`：所属书籍。
+- `index`：片段顺序。
+- `title`：章节或片段标题。
+- `startChar`：全书起始字符位置。
+- `endChar`：全书结束字符位置。
+- `text`：片段正文。
+- `type`：`chapter` 或 `chunk`。
+- `parseConfidence`：`high`、`medium` 或 `low`。
+- `atmosphereStatus`：`pending`、`ready` 或 `failed`。
 
-### ReadingProgress
+约束：
 
-- `bookId`: string, primary key.
-- `segmentId`: string.
-- `charOffsetInSegment`: number.
-- `absoluteCharOffset`: number.
-- `updatedAt`: timestamp.
+- 同一本书的片段必须有序且不重叠。
+- `startChar < endChar`。
 
-Constraints:
+### 6.3 ReadingProgress
 
-- `absoluteCharOffset` is the maximum context boundary for spoiler-safe chat.
+- `bookId`：主键。
+- `segmentId`：当前片段。
+- `charOffsetInSegment`：片段内字符偏移。
+- `absoluteCharOffset`：全书绝对字符偏移。
+- `updatedAt`：更新时间。
 
-### Annotation
+约束：
 
-- `id`: string, primary key.
-- `bookId`: string.
-- `segmentId`: string.
-- `startChar`: number.
-- `endChar`: number.
-- `selectedText`: string.
-- `note`: string.
-- `color`: string.
-- `createdAt`: timestamp.
-- `updatedAt`: timestamp.
+- `absoluteCharOffset` 是防剧透上下文的最大边界。
 
-Constraints:
+### 6.4 Annotation
 
-- Annotation ranges must belong to the referenced segment.
+- `id`：字符串，主键。
+- `bookId`：所属书籍。
+- `segmentId`：所属片段。
+- `startChar`：片段内起始字符位置。
+- `endChar`：片段内结束字符位置。
+- `selectedText`：选中文本。
+- `note`：批注内容。
+- `color`：高亮颜色。
+- `createdAt`：创建时间。
+- `updatedAt`：更新时间。
 
-### ChatMessage
+约束：
 
-- `id`: string, primary key.
-- `bookId`: string.
-- `segmentId`: string.
-- `role`: `user` or `assistant`.
-- `content`: string.
-- `selectedText`: optional string.
-- `annotationId`: optional string.
-- `contextStartChar`: number.
-- `contextEndChar`: number.
-- `spoilerPolicy`: `strict`.
-- `createdAt`: timestamp.
+- 批注范围必须属于对应片段。
 
-Constraints:
+### 6.5 ChatMessage
 
-- `contextEndChar <= ReadingProgress.absoluteCharOffset` when the message is created.
+- `id`：字符串，主键。
+- `bookId`：所属书籍。
+- `segmentId`：所属片段。
+- `role`：`user` 或 `assistant`。
+- `content`：消息内容。
+- `selectedText`：可选选中文本。
+- `annotationId`：可选关联批注。
+- `contextStartChar`：本次请求上下文起始位置。
+- `contextEndChar`：本次请求上下文结束位置。
+- `spoilerPolicy`：`strict`。
+- `createdAt`：创建时间。
 
-### AtmosphereProfile
+约束：
 
-- `segmentId`: string, primary key.
-- `moods`: string array.
-- `scenes`: string array.
-- `pace`: `slow`, `medium`, or `fast`.
-- `intensity`: number from 0 to 1.
-- `energy`: number from 0 to 1.
-- `darkness`: number from 0 to 1.
-- `warmth`: number from 0 to 1.
-- `tags`: string array.
-- `chapterEndPrompt`: string.
-- `modelName`: string.
-- `createdAt`: timestamp.
+- 消息创建时，`contextEndChar <= ReadingProgress.absoluteCharOffset`。
 
-### BgmTrack
+### 6.6 AtmosphereProfile
 
-- `id`: string, primary key.
-- `title`: string.
-- `source`: `built-in` or `user-uploaded`.
-- `fileRef`: string.
-- `moods`: string array.
-- `scenes`: string array.
-- `energy`: number from 0 to 1.
-- `darkness`: number from 0 to 1.
-- `warmth`: number from 0 to 1.
-- `tempo`: `slow`, `medium`, or `fast`.
-- `licenseNote`: string.
-- `createdAt`: timestamp.
+- `segmentId`：主键。
+- `moods`：情绪标签数组。
+- `scenes`：场景标签数组。
+- `pace`：`slow`、`medium` 或 `fast`。
+- `intensity`：0 到 1 的数值。
+- `energy`：0 到 1 的数值。
+- `darkness`：0 到 1 的数值。
+- `warmth`：0 到 1 的数值。
+- `tags`：其他标签数组。
+- `chapterEndPrompt`：章节结束轻提示。
+- `modelName`：生成模型名。
+- `createdAt`：创建时间。
 
-### BgmRecommendation
+### 6.7 BgmTrack
 
-- `id`: string, primary key.
-- `segmentId`: string.
-- `trackId`: string.
-- `score`: number.
-- `reason`: string.
-- `createdAt`: timestamp.
+- `id`：字符串，主键。
+- `title`：曲目名。
+- `source`：`built-in` 或 `user-uploaded`。
+- `fileRef`：本地文件引用。
+- `moods`：情绪标签数组。
+- `scenes`：场景标签数组。
+- `energy`：0 到 1 的数值。
+- `darkness`：0 到 1 的数值。
+- `warmth`：0 到 1 的数值。
+- `tempo`：`slow`、`medium` 或 `fast`。
+- `licenseNote`：版权或来源说明。
+- `createdAt`：创建时间。
 
-## 7. Credential and Distribution Design
+### 6.8 BgmRecommendation
 
-### Credential Storage
+- `id`：字符串，主键。
+- `segmentId`：对应片段。
+- `trackId`：推荐曲目。
+- `score`：匹配分。
+- `reason`：推荐理由。
+- `createdAt`：创建时间。
 
-LLM credentials live only in backend environment variables:
+## 7. 凭据与分发设计
+
+### 7.1 凭据存储
+
+LLM 凭据只存在于后端环境变量：
 
 ```text
 OPENAI_API_KEY=
@@ -599,151 +600,152 @@ OPENAI_BASE_URL=
 OPENAI_MODEL=
 ```
 
-The frontend never stores or receives provider credentials.
+前端永远不保存、不接收供应商凭据。
 
-### Credential Operations
+### 7.2 凭据录入、更新与清除
 
-- Record: copy `.env.example` to `.env` and fill `OPENAI_API_KEY`.
-- Update: edit `.env` or machine environment variables, then restart backend.
-- Clear: remove the key, then restart backend; LLM features become disabled.
-- Validate: backend health check reports whether LLM is configured without exposing the key.
+- 录入：复制 `.env.example` 为 `.env`，填写 `OPENAI_API_KEY`。
+- 更新：修改 `.env` 或目标机器环境变量，然后重启后端。
+- 清除：删除 key 后重启后端，LLM 功能进入禁用状态。
+- 验证：健康检查只返回 LLM 是否已配置，不返回 key 内容。
 
-### Distribution
+### 7.3 分发形态
 
-Target platform:
+目标平台：
 
-- Local browser on Windows/macOS/Linux.
-- Docker-capable development machines for course evaluation.
+- Windows、macOS、Linux 上的本地浏览器。
+- 支持 Docker 的课程验收环境。
 
-First-version distribution:
+第一版分发命令：
 
 ```text
 docker compose up --build
 ```
 
-Expected services:
+预期服务：
 
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:8080`
+- 前端：`http://localhost:5173`
+- 后端：`http://localhost:8080`
 
-Optional later distribution:
+后续可选方向：
 
-- A single Docker image where Spring Boot serves the built frontend.
+- 构建为单个 Docker 镜像，由 Spring Boot 托管前端构建产物。
 
-## 8. Technical Choices and Rationale
+## 8. 技术选型与理由
 
-### Frontend
+### 8.1 前端
 
-- React + TypeScript + Vite.
-- Reason: fast interactive UI development, strong type safety, easy testing, good fit for a reader with local state and rich interactions.
+- React + TypeScript + Vite。
+- 理由：适合快速构建复杂交互界面，类型安全较好，测试生态成熟，适合阅读器、本地状态和富交互。
 
-### UI Design System
+### 8.2 UI 设计系统
 
-- Open Design is the referenced design system for frontend work.
-- The reader should feel quiet, immersive, and content-first rather than like an AI dashboard.
-- Cards should be reserved for repeated items, modals, or tool panels; reading sections should be unframed and typography-led.
+- 前端参考 Open Design 设计系统。
+- 阅读器应当安静、沉浸、内容优先，而不是 AI 后台或管理控制台。
+- 卡片只用于重复项目、弹窗或工具面板，正文阅读区以排版和留白为核心。
 
-### Local Storage
+### 8.3 本地存储
 
-- IndexedDB with a storage adapter.
-- Reason: supports larger text records and audio blobs better than localStorage, while keeping user content local.
+- IndexedDB，并封装 storage adapter。
+- 理由：相比 localStorage，IndexedDB 更适合保存较大的文本记录和音频 Blob，同时能保持用户内容本地优先。
 
-### Backend
+### 8.4 后端
 
-- Java + Spring Boot.
-- Reason: the project owner is more familiar with Java; Spring Boot provides a clear structure for controllers, services, configuration, validation, and Dockerized deployment.
+- Java + Spring Boot。
+- 理由：项目开发者更熟悉 Java；Spring Boot 适合清晰组织 Controller、Service、配置、校验、日志和 Docker 化部署。
 
-### Server Database
+### 8.5 服务端数据库
 
-- No MySQL in the first version.
-- Reason: the product is local-first. Storing novels, annotations, and BGM on the server would increase privacy, copyright, account, and deletion complexity. MySQL can be introduced later for account sync or cloud backup.
+- 第一版不使用 MySQL。
+- 理由：产品定位是本地优先。把小说、批注和 BGM 存到服务端会增加隐私、版权、账号、多用户隔离和删除流程复杂度。MySQL 可以在后续云同步或账号体系中引入。
 
-### LLM Provider
+### 8.6 LLM 供应商
 
-- OpenAI API by default, with an adapter that can support OpenAI-compatible endpoints through `OPENAI_BASE_URL`.
-- Reason: stable chat and structured output capabilities; backend adapter keeps provider details isolated.
+- 默认使用 OpenAI API，并通过 `OPENAI_BASE_URL` 保留接入 OpenAI-compatible 服务的可能。
+- 理由：聊天和结构化输出能力稳定；后端适配器可以隔离供应商细节。
 
-### Testing
+### 8.7 测试
 
-- Frontend/unit: Vitest.
-- Frontend components: React Testing Library.
-- E2E: Playwright.
-- Backend: JUnit + Spring Boot Test.
+- 前端单元测试：Vitest。
+- 前端组件测试：React Testing Library。
+- E2E 测试：Playwright。
+- 后端测试：JUnit + Spring Boot Test。
 
-### Deployment
+### 8.8 部署
 
-- Docker Compose for first-version delivery.
-- Reason: simple cold-start validation and clear separation of frontend and backend services.
+- 第一版使用 Docker Compose。
+- 理由：便于课程冷启动验证，也能清楚分离前端和后端服务。
 
-## 9. Acceptance Criteria
+## 9. 验收标准
 
-### TXT Parsing
+### 9.1 TXT 解析
 
-- A TXT file with recognized chapters produces an ordered chapter list.
-- A TXT file without reliable chapters produces ordered chunks.
-- Parsed text preserves original content.
-- Parser tests cover Chinese chapter headings, numbered headings, and fallback chunking.
+- 带章节标题的 TXT 能生成有序章节目录。
+- 无可靠章节标题的 TXT 能生成有序阅读片段。
+- 解析后原文不丢失、不乱序。
+- 单元测试覆盖中文章节标题、数字编号标题和 fallback 切片。
 
-### Reader UI
+### 9.2 阅读器 UI
 
-- Users can open a parsed book and scroll through text.
-- Reading progress persists after refresh.
-- Typography and theme settings persist.
-- The first screen after opening a book is the reader experience.
+- 用户可以打开解析后的书籍并滚动阅读。
+- 阅读进度刷新后仍然保留。
+- 字号、行高、主题和阅读宽度设置可保存。
+- 打开书籍后的第一屏是阅读体验。
 
-### BGM
+### 9.3 BGM
 
-- The app includes at least a small built-in royalty-free or self-produced demo BGM set.
-- Users can upload local audio and edit metadata.
-- Current segment atmosphere produces ranked BGM recommendations.
-- Track switching requires user confirmation unless the user manually selects a track.
+- 应用包含至少一组内置免版权或自制演示 BGM。
+- 用户可以上传本地音频并编辑元数据。
+- 当前片段氛围可以生成排序后的 BGM 推荐。
+- 除非用户手动选择，否则切换曲目前需要确认。
 
-### Annotation
+### 9.4 批注
 
-- Users can highlight selected text and add a note.
-- Highlights persist after refresh.
-- An annotation can seed a companion chat request.
+- 用户可以高亮选中文本并添加批注。
+- 高亮刷新后仍然存在。
+- 批注可以带入书搭子聊天。
 
-### Spoiler Guard
+### 9.5 防剧透
 
-- The allowed LLM context never exceeds current reading progress.
-- Tests prove that future text is excluded from chat payloads.
-- High-risk questions receive uncertainty-bounded answers.
+- 允许发送给 LLM 的上下文不得超过当前阅读进度。
+- 测试证明未读正文不会进入聊天 payload。
+- 高剧透风险问题只能得到基于已读线索的不确定回答。
 
-### Reading Companion
+### 9.6 书搭子
 
-- Default response length is short, usually 1-4 sentences.
-- Tone matches a casual web-novel reading buddy.
-- It can recall read-so-far context, discuss selected passages, and guess from current clues.
-- It does not claim knowledge from unread content.
+- 默认回复较短，通常为 1-4 句。
+- 语气符合轻松的网文书友。
+- 可以回忆已读剧情、讨论选中段落，并基于当前线索一起猜。
+- 不声称知道未读内容。
 
-### Backend LLM Proxy
+### 9.7 后端 LLM 代理
 
-- API key is loaded from environment variables only.
-- Missing key disables LLM endpoints gracefully.
-- Logs do not contain raw novel text or credentials.
-- Request size limits are enforced.
+- API key 只从环境变量读取。
+- 缺少 key 时，LLM 接口优雅降级。
+- 日志不包含小说正文或凭据。
+- 后端强制请求大小限制。
 
-### Distribution and Tests
+### 9.8 分发与测试
 
-- `docker compose up --build` starts the frontend and backend.
-- One command runs frontend and backend tests.
-- CI runs parser, spoiler guard, BGM matcher, LLM adapter, and backend validation tests.
+- `docker compose up --build` 可以启动前端和后端。
+- 有一条命令可以运行前后端测试。
+- CI 覆盖解析器、防剧透模块、BGM 推荐器、LLM adapter 和后端请求校验。
 
-## 10. Explicit Non-Goals
+## 10. 明确不做的内容
 
-- Online novel search or download.
-- Public music distribution, search, or sharing.
-- Server-side storage of novel text, annotations, chat history, or uploaded audio.
-- Complex character graph or Obsidian-like knowledge base.
-- Simulated page-turn animation in the first version.
-- Automatic in-reading barrage comments.
-- Autonomous agent loops or LLM tool calling.
+- 在线小说搜索或下载。
+- 音乐搜索、下载、公开分享或分发。
+- 服务端保存小说正文、批注、聊天记录或上传音频。
+- 复杂人物关系图谱或 Obsidian 式知识库。
+- 第一版不做仿真翻页动画。
+- 阅读中自动弹幕式陪读。
+- 自主 agent 循环或 LLM 工具调用。
 
-## 11. Open Risks
+## 11. 主要风险
 
-- TXT encoding and messy formatting may require iterative parser improvements.
-- Long web novels may require careful context summarization to keep LLM requests small.
-- BGM matching quality depends on useful track metadata.
-- Spoiler prevention must be proven by tests, not only prompt wording.
-- Browser IndexedDB storage limits vary across environments.
+- TXT 编码和混乱格式可能需要持续改进解析器。
+- 长篇网文会带来上下文裁剪和摘要管理压力。
+- BGM 推荐质量依赖曲目元数据质量。
+- 防剧透必须用测试证明，不能只依赖提示词。
+- 不同浏览器对 IndexedDB 的容量限制不同。
+
