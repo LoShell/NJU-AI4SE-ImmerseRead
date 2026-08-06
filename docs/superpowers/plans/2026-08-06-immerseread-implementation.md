@@ -6,7 +6,7 @@
 
 **Architecture:** 前端使用 React + TypeScript + Vite，负责 TXT 解析、IndexedDB 本地存储、阅读 UI、批注、BGM 播放与防剧透上下文构造。后端使用 Spring Boot，仅作为 LLM 代理、凭据隔离、请求校验、结构化输出规范化和脱敏日志层，不持久化小说正文、批注、聊天记录或音频。
 
-**Tech Stack:** React, TypeScript, Vite, Vitest, React Testing Library, Playwright, IndexedDB, Java 17, Spring Boot 3, JUnit 5, Docker Compose, OpenAI-compatible Chat Completions API.
+**Tech Stack:** React, TypeScript, Vite, Vitest, React Testing Library, Playwright, IndexedDB, Java 17, Spring Boot 4.1.0, JUnit 5, Docker Compose, OpenAI-compatible Chat Completions API.
 
 ## Global Constraints
 
@@ -85,6 +85,18 @@ NJU-AI4SE-ImmerseRead/
   .github/workflows/ci.yml
 ```
 
+## Current Backend Skeleton Notes
+
+The backend skeleton already exists under `backend/` and must be treated as user-provided work:
+
+- `backend/pom.xml` already uses Spring Boot `4.1.0` and Java `17`; keep those versions unless the project fails to build for a version-specific reason.
+- `backend/src/main/java/cn/immerseread/ImmerseReadApplication.java` already exists.
+- `backend/src/main/java/cn/immerseread/health/HealthController.java` already exists but is empty.
+- `backend/src/main/java/cn/immerseread/llm/` already contains empty placeholders for `LlmController`, `LlmService`, `ChatClient`, DTOs, and some misplaced test placeholders.
+- `backend/src/main/java/cn/immerseread/config/LlmPropertirs.java` exists with a spelling error; rename or replace it with `LlmProperties.java`.
+- Any class named `*Test` currently under `src/main/java` is misplaced and must be moved to `src/test/java` or deleted when the real test class is created.
+- `backend/README.md`, `backend/docker-compose.yml`, and `backend/.env.example` currently exist but are empty; complete or replace them in the relevant tasks.
+
 ---
 
 ### Task 1: 项目脚手架与一键命令
@@ -99,12 +111,13 @@ NJU-AI4SE-ImmerseRead/
 - Create: `frontend/src/app/App.tsx`
 - Create: `frontend/src/app/App.test.tsx`
 - Create: `frontend/src/styles/global.css`
-- Create: `backend/pom.xml`
-- Create: `backend/src/main/java/cn/immerseread/ImmerseReadApplication.java`
-- Create: `backend/src/main/java/cn/immerseread/health/HealthController.java`
+- Modify: `backend/pom.xml`
+- Modify: `backend/src/main/java/cn/immerseread/ImmerseReadApplication.java`
+- Modify: `backend/src/main/java/cn/immerseread/health/HealthController.java`
 - Create: `backend/src/test/java/cn/immerseread/health/HealthControllerTest.java`
+- Delete if still present: `backend/src/main/java/cn/immerseread/llm/health/HealthControllerTest.java`
 - Create: `.gitignore`
-- Create: `.env.example`
+- Modify: `backend/.env.example`
 - Modify: `README.md`
 
 **Interfaces:**
@@ -182,7 +195,7 @@ class HealthControllerTest {
 }
 ```
 
-- [ ] **Step 5: Implement Spring Boot scaffold and health endpoint**
+- [ ] **Step 5: Complete the existing Spring Boot scaffold and health endpoint**
 
 Implement `HealthController`:
 
@@ -197,6 +210,8 @@ class HealthController {
 }
 ```
 
+Keep the existing Spring Boot `4.1.0` parent in `backend/pom.xml`. Ensure test classes live under `backend/src/test/java`, not `backend/src/main/java`.
+
 - [ ] **Step 6: Run scaffold tests**
 
 Run: `cd frontend && npm run test -- App.test.tsx`
@@ -210,7 +225,7 @@ Expected: PASS.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add frontend backend .gitignore .env.example README.md
+git add frontend backend .gitignore README.md
 git commit -m "chore: scaffold ImmerseRead app"
 ```
 
@@ -674,10 +689,10 @@ git commit -m "feat: recommend bgm from atmosphere tags"
 
 **Files:**
 
-- Create: `backend/src/main/java/cn/immerseread/config/LlmProperties.java`
-- Create: `backend/src/main/java/cn/immerseread/llm/LlmController.java`
-- Create: `backend/src/main/java/cn/immerseread/llm/LlmService.java`
-- Create: `backend/src/main/java/cn/immerseread/llm/OpenAiChatClient.java`
+- Replace: `backend/src/main/java/cn/immerseread/config/LlmPropertirs.java` with `backend/src/main/java/cn/immerseread/config/LlmProperties.java`
+- Modify: `backend/src/main/java/cn/immerseread/llm/LlmController.java`
+- Modify: `backend/src/main/java/cn/immerseread/llm/LlmService.java`
+- Replace: `backend/src/main/java/cn/immerseread/llm/ChatClient.java` with `backend/src/main/java/cn/immerseread/llm/OpenAiChatClient.java` and an interface if needed
 - Create: `backend/src/main/java/cn/immerseread/llm/dto/AtmosphereRequest.java`
 - Create: `backend/src/main/java/cn/immerseread/llm/dto/AtmosphereResponse.java`
 - Create: `backend/src/main/java/cn/immerseread/llm/dto/ChatRequest.java`
@@ -685,6 +700,8 @@ git commit -m "feat: recommend bgm from atmosphere tags"
 - Create: `backend/src/main/java/cn/immerseread/llm/dto/ErrorResponse.java`
 - Create: `backend/src/test/java/cn/immerseread/llm/LlmControllerTest.java`
 - Create: `backend/src/test/java/cn/immerseread/llm/LlmServiceTest.java`
+- Delete if still present: `backend/src/main/java/cn/immerseread/llm/LlmControllerTest.java`
+- Delete if still present: `backend/src/main/java/cn/immerseread/llm/LlmServiceTest.java`
 - Modify: `backend/src/main/java/cn/immerseread/health/HealthController.java`
 
 **Interfaces:**
@@ -752,7 +769,7 @@ Expected: FAIL because LLM classes are not implemented.
 
 - [ ] **Step 4: Implement DTOs**
 
-Use Java records:
+Use Java records or ordinary immutable classes. Prefer records unless Spring Boot `4.1.0` project settings or serialization tests show a compatibility issue:
 
 ```java
 public record ChatRequest(
@@ -786,6 +803,7 @@ Rules:
 Implementation requirements:
 
 - `LlmProperties` reads `OPENAI_API_KEY`, `OPENAI_BASE_URL`, and `OPENAI_MODEL`.
+- Remove the misspelled `LlmPropertirs` class after `LlmProperties` is in place.
 - If key is blank, return a disabled-feature response without calling provider.
 - Chat prompt includes: short answer, casual web-novel buddy tone, and spoiler-safe instruction.
 - Atmosphere prompt asks for structured JSON only.
