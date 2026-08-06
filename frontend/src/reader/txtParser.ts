@@ -15,11 +15,10 @@ const PARSER_VERSION = "txt-v1";
 const DEFAULT_CHUNK_SIZE = 4000;
 
 const CHAPTER_PATTERNS = [
-  /^绗.+?[绔犺妭].*$/,
-  /^绗.*?鑺?.*$/,
-  /^鍗.+$/,
+  /^第[一二三四五六七八九十百千万零〇\d]+[章节回卷部].*$/,
+  /^卷[一二三四五六七八九十百千万零〇\d]+.*$/,
   /^Chapter\s+\d+.*$/i,
-  /^\d+(?:[.銆乚]|\s+).+$/
+  /^\d+(?:[.、]|\s+).+$/
 ];
 
 export function parseTxtBook(input: ParseTxtBookInput): ParsedBook {
@@ -54,9 +53,9 @@ function findChapterHeadings(text: string): Array<{ index: number; title: string
   let match: RegExpExecArray | null;
 
   while ((match = linePattern.exec(text)) !== null) {
-    const line = match[0];
-    if (line.trim() !== "" && CHAPTER_PATTERNS.some((pattern) => pattern.test(line.trim()))) {
-      headings.push({ index: match.index, title: line.trim() });
+    const line = match[0].trim();
+    if (line !== "" && CHAPTER_PATTERNS.some((pattern) => pattern.test(line))) {
+      headings.push({ index: match.index, title: line });
     }
 
     if (match[0] === "") {
@@ -99,7 +98,7 @@ function createChunkSegments(text: string, chunkSize: number, bookId: string): S
       createSegment({
         bookId,
         index: 0,
-        title: "鐗囨 1",
+        title: "片段 1",
         startChar: 0,
         endChar: 0,
         text,
@@ -117,7 +116,7 @@ function createChunkSegments(text: string, chunkSize: number, bookId: string): S
       createSegment({
         bookId,
         index: segments.length,
-        title: `鐗囨 ${segments.length + 1}`,
+        title: `片段 ${segments.length + 1}`,
         startChar,
         endChar,
         text,

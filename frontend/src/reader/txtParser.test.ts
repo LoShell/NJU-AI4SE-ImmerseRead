@@ -3,7 +3,7 @@ import { parseTxtBook } from "./txtParser";
 
 describe("parseTxtBook", () => {
   it("recognizes common Chinese chapter headings", () => {
-    const text = "绗竴绔?鍒濊\n濂规帹寮€闂ㄣ€俓n\n绗簩绔?澶滈洦\n闆ㄥ０寰堟€ャ€?";
+    const text = "第一章 初见\n她推开门。\n\n第二章 夜雨\n雨声很急。";
 
     const parsed = parseTxtBook({ fileName: "demo.txt", text });
 
@@ -14,7 +14,7 @@ describe("parseTxtBook", () => {
     expect(parsed.segments[0]).toMatchObject({
       bookId: parsed.book.id,
       index: 0,
-      title: "绗竴绔?鍒濊",
+      title: "第一章 初见",
       startChar: 0,
       type: "chapter",
       parseConfidence: "high",
@@ -22,14 +22,26 @@ describe("parseTxtBook", () => {
     });
     expect(parsed.segments[1]).toMatchObject({
       index: 1,
-      title: "绗簩绔?澶滈洦",
+      title: "第二章 夜雨",
       type: "chapter",
       parseConfidence: "high"
     });
   });
 
+  it("recognizes mixed heading styles", () => {
+    const text = "卷一 风起\n序幕。\nChapter 2 Rain\n雨落。\n3. 归途\n回家。";
+
+    const parsed = parseTxtBook({ fileName: "mixed.txt", text });
+
+    expect(parsed.segments.map((segment) => segment.title)).toEqual([
+      "卷一 风起",
+      "Chapter 2 Rain",
+      "3. 归途"
+    ]);
+  });
+
   it("falls back to chunks when chapter headings are unreliable", () => {
-    const text = "鍗蜂竴\n" + "涓€娈垫櫘閫氭鏂囥€俓n".repeat(20);
+    const text = "第一章\n" + "一段普通正文。\n".repeat(20);
 
     const parsed = parseTxtBook({
       fileName: "plain.txt",
@@ -39,7 +51,7 @@ describe("parseTxtBook", () => {
 
     expect(parsed.segments.length).toBeGreaterThan(1);
     expect(parsed.segments[0]).toMatchObject({
-      title: "鐗囨 1",
+      title: "片段 1",
       type: "chunk",
       parseConfidence: "low",
       startChar: 0
@@ -65,7 +77,7 @@ describe("parseTxtBook", () => {
 
     expect(empty.segments).toHaveLength(1);
     expect(empty.segments[0]).toMatchObject({
-      title: "鐗囨 1",
+      title: "片段 1",
       startChar: 0,
       endChar: 0,
       text: "",
