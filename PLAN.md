@@ -104,6 +104,18 @@ The backend skeleton already exists under `backend/` and must be treated as user
 - Any class named `*Test` currently under `src/main/java` is misplaced and must be moved to `src/test/java` or deleted when the real test class is created.
 - `backend/README.md`, `backend/docker-compose.yml`, and `backend/.env.example` currently exist but are empty; complete or replace them in the relevant tasks.
 
+## Pre-Flight Environment
+
+Before executing Task 1, verify these local tools are available:
+
+- Node.js 22 or newer: `node --version`.
+- npm 10 or newer: `npm --version`.
+- Java 17 or newer: `java --version`.
+- Maven 3.9 or the project Maven wrapper: `mvn --version` or `backend/mvnw --version`.
+- Git: `git --version`.
+
+If a tool is missing, stop and record the blocker in `AGENT_LOG.md`; do not guess alternate commands. If Maven needs to download dependencies, it may write to the local Maven repository outside the project directory.
+
 ---
 
 ### Task 1: 项目脚手架与一键命令
@@ -118,7 +130,7 @@ The backend skeleton already exists under `backend/` and must be treated as user
 - Create: `frontend/src/app/App.tsx`
 - Create: `frontend/src/app/App.test.tsx`
 - Create: `frontend/src/styles/global.css`
-- Modify: `backend/pom.xml`
+- Verify: `backend/pom.xml`
 - Modify: `backend/src/main/java/cn/immerseread/ImmerseReadApplication.java`
 - Modify: `backend/src/main/java/cn/immerseread/health/HealthController.java`
 - Create: `backend/src/test/java/cn/immerseread/health/HealthControllerTest.java`
@@ -134,7 +146,34 @@ The backend skeleton already exists under `backend/` and must be treated as user
 - Produces backend endpoint: `GET /api/health`.
 - Produces environment variables: `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL`.
 
-- [ ] **Step 1: Create frontend failing smoke test**
+- [ ] **Step 1: Create the minimal frontend test harness**
+
+Create only the files needed for Vitest to load a React test:
+
+- `frontend/package.json`
+- `frontend/vite.config.ts`
+- `frontend/tsconfig.json`
+- `frontend/index.html`
+- `frontend/src/main.tsx`
+- `frontend/src/styles/global.css`
+
+`frontend/package.json` must include these scripts before the first test run:
+
+```json
+{
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test"
+  }
+}
+```
+
+This is bootstrapping the test runner, not implementing product behavior.
+
+- [ ] **Step 2: Create frontend failing smoke test**
 
 ```tsx
 import { render, screen } from "@testing-library/react";
@@ -150,27 +189,13 @@ describe("App", () => {
 });
 ```
 
-- [ ] **Step 2: Run frontend test and verify it fails**
+- [ ] **Step 3: Run frontend test and verify it fails**
 
 Run: `cd frontend && npm run test -- App.test.tsx`
 
-Expected: the command fails because the frontend scaffold does not exist yet.
+Expected: FAIL because `App.tsx` does not render the required product shell yet. If the command fails because dependencies are not installed, run `npm install` and repeat the same test command.
 
-- [ ] **Step 3: Create frontend scaffold**
-
-Implement `frontend/package.json` with these scripts:
-
-```json
-{
-  "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "build": "tsc -b && vite build",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "e2e": "playwright test"
-  }
-}
-```
+- [ ] **Step 4: Implement minimal App component**
 
 Implement `App.tsx`:
 
@@ -185,7 +210,20 @@ export function App() {
 }
 ```
 
-- [ ] **Step 4: Create backend failing health test**
+- [ ] **Step 5: Verify backend pom**
+
+Open `backend/pom.xml` and confirm it already contains:
+
+- Spring Boot parent version `4.1.0`.
+- Java version `17`.
+- `spring-boot-starter-webmvc`.
+- `spring-boot-starter-validation`.
+- `spring-boot-starter-webmvc-test`.
+- `spring-boot-starter-validation-test`.
+
+No `pom.xml` edit is required in Task 1 if those dependencies are present. If any dependency is missing, add only the missing dependency needed for `/api/health` and its test.
+
+- [ ] **Step 6: Create backend failing health test**
 
 ```java
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -202,7 +240,7 @@ class HealthControllerTest {
 }
 ```
 
-- [ ] **Step 5: Complete the existing Spring Boot scaffold and health endpoint**
+- [ ] **Step 7: Complete the existing Spring Boot scaffold and health endpoint**
 
 Implement `HealthController`:
 
@@ -219,7 +257,7 @@ class HealthController {
 
 Keep the existing Spring Boot `4.1.0` parent in `backend/pom.xml`. Ensure test classes live under `backend/src/test/java`, not `backend/src/main/java`.
 
-- [ ] **Step 6: Run scaffold tests**
+- [ ] **Step 8: Run scaffold tests**
 
 Run: `cd frontend && npm run test -- App.test.tsx`
 
@@ -229,7 +267,7 @@ Run: `cd backend && mvn test`
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add frontend backend .gitignore README.md

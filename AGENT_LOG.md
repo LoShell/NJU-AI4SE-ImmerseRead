@@ -61,3 +61,23 @@
   - 使用不同 agent 进行冷启动验证。
   - 根据冷启动反馈修订 SPEC / PLAN。
 
+### Task: Cold Start Validation Round 1
+
+- 技能：`superpowers:receiving-code-review`
+- 外部 agent：DeepSeek 全新对话。
+- 输入上下文：`SPEC.md`、`PLAN.md`、冷启动任务说明。
+- 验证范围：Task 1 与 Task 2。
+- DeepSeek 关键反馈：
+  - Task 1 在空前端项目中要求“先跑失败测试”不够精确，因为测试工具链尚不存在。
+  - `App.tsx` smoke test 更适合描述为脚手架后的第一个红绿循环。
+  - `backend/pom.xml` 标为修改但没有明确修改内容。
+  - PLAN 缺少 Node.js、npm、Java、Maven 等前置环境要求。
+  - 删除 misplaced test 的步骤应写成存在则处理。
+- 人工判断：
+  - 这些反馈是 PLAN 清晰度问题，不影响 SPEC 的产品方向。
+  - 需要修订 PLAN，提高冷启动可执行性。
+- 修订：
+  - 在 PLAN 增加 `Pre-Flight Environment`。
+  - 调整 Task 1 的前端步骤为先建最小测试 harness，再写失败测试。
+  - 将 `backend/pom.xml` 改为 Verify，并列出需要确认的依赖。
+  - 将冷启动结果补入 `SPEC_PROCESS.md`。

@@ -120,18 +120,45 @@
 
 ## 6. 冷启动验证记录
 
-状态：待冷启动验证后补充。
+状态：已完成第一轮冷启动验证。
 
-计划操作：
+验证方式：
 
-1. 新开一个不同 agent 类型或不同入口的全新对话。
-2. 不导入本对话历史，不提供额外口头解释。
-3. 只提供 `SPEC.md`、`PLAN.md` 和 `docs/COLD_START_PROMPT.md` 中的任务说明。
-4. 要求第二个 agent 尝试实现 PLAN 中 1-2 个 task，遇到不确定之处立即暂停询问。
-5. 将它暴露的问题、误解、暂停点和产出差距记录到本节。
-6. 根据冷启动反馈修订 SPEC / PLAN，并记录关键 diff。
+1. 新开 DeepSeek 全新对话。
+2. 不导入本对话历史。
+3. 提供 `SPEC.md`、`PLAN.md` 和冷启动任务说明。
+4. 要求其尝试实现 Task 1 和 Task 2，并在不确定处暂停提问。
+
+第二个 agent 读到的关键约束：
+
+- 本地优先，小说正文、批注、进度、聊天和用户上传 BGM 保存在浏览器 IndexedDB。
+- 前端 React + TypeScript + Vite，后端 Spring Boot 4.1.0 + Java 17。
+- LLM key 只在后端，前端不接触凭据。
+- 书搭子聊天必须经过 `SpoilerGuard`，未读内容不得进入 LLM 请求。
+- 第一版只支持 TXT。
+- 每个 task 遵循 TDD。
+
+暴露的问题：
+
+1. Task 1 的 TDD 描述对“空前端项目”不够精确。原计划要求先写 `App.test.tsx` 并运行失败，但在没有 `package.json`、Vitest 和测试依赖时，测试无法被加载。第二个 agent 因此先创建最小前端脚手架，再写测试。
+2. Task 1 中 `App.tsx` 的测试与实现关系需要澄清。该任务更像“工具链 smoke test + 第一个红绿循环”，不是完整业务 TDD。
+3. Task 1 标注 `backend/pom.xml` 需要修改，但没有说明修改内容。第二个 agent 判断现有 Spring Boot 4.1.0 骨架依赖足够，因此没有修改。
+4. PLAN 缺少前置环境说明，例如 Node.js、npm、Java、Maven。
+5. PLAN 中提到删除某个 misplaced test 路径，第二个 agent 在自己的环境中没有找到该文件，因此跳过。这说明该步骤应写成“存在则删除/迁移”，不能假设所有冷启动环境都有同样占位文件。
+
+产出与预期差距：
+
+- 第二个 agent 能理解产品边界和主要技术栈。
+- 它能按 Task 1 / Task 2 的目标推进，并报告测试通过。
+- 它在初始脚手架 TDD 细节上需要自行判断，说明 PLAN 的 Task 1 还不够冷启动友好。
+
+据此修订：
+
+- 在 `PLAN.md` 增加 `Pre-Flight Environment`，明确 Node.js、npm、Java、Maven、Git 前置要求。
+- 将 Task 1 的前端步骤改为：先创建最小测试 harness，再写失败测试，再实现 `App.tsx`。
+- 将 `backend/pom.xml` 从“Modify”改为“Verify”，并列出 Task 1 需要确认的具体依赖。
+- 保留 misplaced test 的清理要求，但明确为“存在则删除/迁移”。
 
 ## 7. 初步反思
 
 `brainstorming` 技能在本项目中最有价值的地方，是逼迫产品从“很多功能”收束到“一个核心体验”：不剧透的沉浸式网文书搭子。它也暴露了一个问题：课程要求较多，单靠产品讨论容易遗漏 CI 命名、冷启动验证、凭据管理细节等交付项，因此需要在写完 SPEC/PLAN 后再用课程要求反向审查。
-
