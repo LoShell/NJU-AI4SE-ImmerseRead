@@ -1,5 +1,29 @@
 # NJU-AI4SE-ImmerseRead
 
+## Task 1 scaffold
+
+ImmerseRead is a local-first TXT reading application. The frontend reader works locally; future LLM capabilities use backend-only environment variables and remain disabled when no API key is configured.
+
+### Run checks
+
+```bash
+cd frontend
+npm install
+npm run test -- App.test.tsx
+npm run build
+
+cd ../backend
+mvn test
+```
+
+### Backend environment
+
+Copy `backend/.env.example` to `backend/.env` only for local development or containers. Do not commit `.env` or real credentials.
+
+- `OPENAI_API_KEY`
+- `OPENAI_BASE_URL`
+- `OPENAI_MODEL`
+
 ImmerseRead 是南京大学《智能化软件工程师训练营》期末 B 类应用项目：一个面向小说和网文读者的本地优先沉浸式 TXT 阅读器。
 
 30 秒介绍：

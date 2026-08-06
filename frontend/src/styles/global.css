@@ -1,0 +1,13 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #1f2933;
+  background: #ffffff;
+}
+
+body {
+  margin: 0;
+}
+
+.app-shell {
+  padding: 2rem;
+}
