@@ -73,7 +73,7 @@ mvn test
 当前后端骨架预期结果：
 
 ```text
-Tests run: 1, Failures: 0, Errors: 0
+Tests run: 2, Failures: 0, Errors: 0
 ```
 
 ## 冷启动验证
