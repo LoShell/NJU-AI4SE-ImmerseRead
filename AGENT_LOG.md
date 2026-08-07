@@ -60,6 +60,40 @@
   - `npm run build` passed.
   - `mvn test` passed.
 
+### Task 4: SpoilerGuard
+
+- Implementer subagent: Linnaeus.
+- Commit: `9c50758 feat: enforce spoiler-safe context`.
+- Manual modifications:
+  - Codex restored readable Chinese spoiler-safe instruction, future-risk keywords, and UTF-8 test fixtures in `0b66009 fix: restore readable spoiler guard rules`.
+- Human verification:
+  - `npm run test -- spoilerGuard.test.ts` passed locally on 2026-08-07.
+- Codex verification:
+  - `npm run build` passed.
+
+### Task 5: BGM Types And Recommendation Rules
+
+- Implementer subagent: Averroes.
+- Commit: `7190db7 feat: recommend bgm from atmosphere tags`.
+- Manual modifications:
+  - Codex aligned built-in BGM metadata with Chinese mood/scene tags and the frontend 0-1 atmosphere numeric scale in `cf9798f fix: align bgm metadata with atmosphere scale`.
+- Human verification:
+  - `npm run test -- bgmMatcher.test.ts` passed locally on 2026-08-07.
+- Codex verification:
+  - `npm run build` passed.
+
+### Task 6: Spring Boot LLM Proxy And Credential Boundary
+
+- Implementer subagent: Heisenberg.
+- Commit: `d9044f0 feat: secure llm credentials and proxy requests`.
+- Manual modifications:
+  - Codex restored readable backend prompts/messages, added env fallback for `OPENAI_MODEL` and `OPENAI_BASE_URL`, and aligned atmosphere response numbers with the 0-1 frontend scale in `3a5032e fix: align llm proxy messages and atmosphere scale`.
+- Verification:
+  - `mvn test` passed with 11 tests, 0 failures, 0 errors.
+- Residual risks:
+  - `SystemCredentialStore` is an explicit unsupported skeleton and does not write plaintext.
+  - `OpenAiChatClient` is a thin provider integration layer; tests use fakes and do not require network or credentials.
+
 ## 2026-08-06
 
 ### Task: Brainstorming

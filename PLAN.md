@@ -26,9 +26,18 @@
   - Implementation: `eca67ca` (`feat: persist local reader library`) by subagent Carson.
   - Review: subagent Copernicus returned `NO_BLOCKING_FINDINGS`.
   - Human verification: `libraryRepository.test.ts` passed locally on 2026-08-07.
-- [ ] Task 4: SpoilerGuard 防剧透上下文
-- [ ] Task 5: BGM 类型、内置音轨与推荐规则
-- [ ] Task 6: Spring Boot LLM 代理与凭据边界
+- [x] Task 4: SpoilerGuard 防剧透上下文
+  - Implementation: `9c50758` (`feat: enforce spoiler-safe context`) by subagent Linnaeus.
+  - Human/Codex fix: `0b66009` (`fix: restore readable spoiler guard rules`) restored readable Chinese rules and tests.
+  - Human verification: `spoilerGuard.test.ts` passed locally on 2026-08-07.
+- [x] Task 5: BGM 类型、内置音轨与推荐规则
+  - Implementation: `7190db7` (`feat: recommend bgm from atmosphere tags`) by subagent Averroes.
+  - Human/Codex fix: `cf9798f` (`fix: align bgm metadata with atmosphere scale`) aligned built-in metadata with Chinese atmosphere tags and 0-1 scoring scale.
+  - Human verification: `bgmMatcher.test.ts` passed locally on 2026-08-07.
+- [x] Task 6: Spring Boot LLM 代理与凭据边界
+  - Implementation: `d9044f0` (`feat: secure llm credentials and proxy requests`) by subagent Heisenberg.
+  - Human/Codex fix: `3a5032e` (`fix: align llm proxy messages and atmosphere scale`) restored readable prompts/messages and aligned atmosphere numbers with the frontend 0-1 scale.
+  - Verification: `mvn test` passed with 11 tests on 2026-08-07.
 
 ## Global Constraints
 
