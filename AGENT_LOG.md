@@ -175,3 +175,27 @@
   - 调整 Task 1 的前端步骤为先建最小测试 harness，再写失败测试。
   - 将 `backend/pom.xml` 改为 Verify，并列出需要确认的依赖。
   - 将冷启动结果补入 `SPEC_PROCESS.md`。
+
+### Task 7: 阅读器主流程 UI
+
+- 执行者：Codex 主对话直接实现；用户明确要求本任务不派子 agent，以保留上下文连续性。
+- 参考输入：`沉浸式小说阅读器设计.zip` 中的 Figma Make 原型。
+- 关键取舍：
+  - 只学习三栏阅读器布局、章节侧栏、右侧陪伴/BGM/批注入口和阅读设置，不直接导入 Figma 生成包。
+  - 不引入 Tailwind、Radix、MUI、shadcn 等大依赖。
+  - 当前前端仍较小，Task 7 先集中在 `App.tsx`，后续 Task 8/9 再按真实复杂度拆组件。
+- TDD 记录：
+  - 先改写 `App.test.tsx`，要求渲染本地优先阅读器工作台、TXT 上传入口、章节导航和右侧陪伴面板。
+  - 验证红灯：`npm run test -- App.test.tsx` 失败，原因是上传控件和阅读器 UI 尚不存在。
+  - 实现后验证绿灯。
+- 实现内容：
+  - 支持上传 `.txt`，通过 `parseTxtBook` 解析并调用 `saveParsedBook` 保存。
+  - 导入后显示书名、章节列表、当前片段正文。
+  - 支持章节切换并调用 `saveReadingProgress` 记录进度。
+  - 增加字体大小、行距、纸页/夜读/暖棕主题控制。
+  - 增加书搭子、批注、BGM 的右侧入口占位，不接入后端或 agent 行为。
+- 验证：
+  - `cd frontend && npm run test -- App.test.tsx`：2 tests passed。
+  - `cd frontend && npm run test`：20 tests passed。
+  - `cd frontend && npm run build`：passed。
+- Commit：待用户审核后提交。

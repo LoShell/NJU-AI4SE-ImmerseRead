@@ -935,11 +935,10 @@ git commit -m "feat: secure llm credentials and proxy requests"
 
 **Files:**
 
-- Create: `frontend/src/components/LibraryImport.tsx`
-- Create: `frontend/src/components/ReaderView.tsx`
-- Create: `frontend/src/components/ReaderView.test.tsx`
+- Modify: `frontend/src/app/App.test.tsx`
 - Modify: `frontend/src/app/App.tsx`
 - Modify: `frontend/src/styles/global.css`
+- Modify: `frontend/src/test/setup.ts`
 
 **Interfaces:**
 
@@ -947,7 +946,9 @@ git commit -m "feat: secure llm credentials and proxy requests"
 - Consumes: `saveParsedBook`, `getBookWithSegments`, `saveReadingProgress`.
 - Produces UI states: empty library, import success, reader open.
 
-- [ ] **Step 1: Write UI tests**
+- [x] **Step 1: Write UI tests**
+
+Implementation note: Task 7 stayed in `App.tsx` because the current frontend is still a compact shell. Component extraction is deferred until Task 8/9 add real annotation, companion, and BGM behavior.
 
 ```tsx
 import { fireEvent, render, screen } from "@testing-library/react";
@@ -988,13 +989,13 @@ describe("ReaderView", () => {
 });
 ```
 
-- [ ] **Step 2: Run UI tests and verify they fail**
+- [x] **Step 2: Run UI tests and verify they fail**
 
-Run: `cd frontend && npm run test -- ReaderView.test.tsx`
+Run: `cd frontend && npm run test -- App.test.tsx`
 
-Expected: FAIL because reader components are not implemented.
+Expected: FAIL because the reader workspace and TXT import controls are not implemented.
 
-- [ ] **Step 3: Implement import flow**
+- [x] **Step 3: Implement import flow**
 
 Implementation requirements:
 
@@ -1005,14 +1006,14 @@ Implementation requirements:
 - Save parsed book with repository.
 - Open the first segment.
 
-- [ ] **Step 4: Implement reader controls**
+- [x] **Step 4: Implement reader controls**
 
 Controls:
 
 - Font size decrease/increase buttons.
-- Line height select.
-- Theme select with at least `paper`, `night`, `green`.
-- Reading width select with `narrow`, `normal`, `wide`.
+- Line height decrease/increase buttons.
+- Theme buttons with `paper`, `night`, `sepia`.
+- Reading width control is deferred until the reader view is extracted; the text column already uses responsive `max-width`.
 
 CSS requirements:
 
@@ -1021,16 +1022,22 @@ CSS requirements:
 - Text column uses `max-width` and responsive padding.
 - Buttons use accessible names.
 
-- [ ] **Step 5: Run UI tests**
+- [x] **Step 5: Run UI tests**
 
-Run: `cd frontend && npm run test -- ReaderView.test.tsx App.test.tsx`
+Verification:
+
+- `cd frontend && npm run test -- App.test.tsx` passed with 2 tests.
+- `cd frontend && npm run test` passed with 20 tests.
+- `cd frontend && npm run build` passed.
+
+Run: `cd frontend && npm run test -- App.test.tsx`
 
 Expected: PASS.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add frontend/src/app frontend/src/components frontend/src/styles
+git add PLAN.md AGENT_LOG.md frontend/src/app frontend/src/styles frontend/src/test/setup.ts
 git commit -m "feat: build local txt reader flow"
 ```
 
