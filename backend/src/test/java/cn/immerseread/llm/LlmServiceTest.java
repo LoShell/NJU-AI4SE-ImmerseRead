@@ -34,6 +34,7 @@ class LlmServiceTest {
         assertThat(response.segmentId()).isEqualTo("segment");
         assertThat(response.moods()).containsExactly("平静");
         assertThat(response.tags()).containsExactly("平静");
+        assertThat(response.energy()).isEqualTo(0.3);
         assertThat(response.modelName()).isEqualTo("disabled");
     }
 
@@ -46,10 +47,10 @@ class LlmServiceTest {
               "moods": ["紧张"],
               "scenes": ["雨夜"],
               "pace": "fast",
-              "intensity": 8,
-              "energy": 7,
-              "darkness": 6,
-              "warmth": 2,
+              "intensity": 0.8,
+              "energy": 0.7,
+              "darkness": 0.6,
+              "warmth": 0.2,
               "tags": ["悬疑"],
               "chapterEndPrompt": "门外传来脚步声。"
             }
@@ -62,7 +63,8 @@ class LlmServiceTest {
         assertThat(response.moods()).containsExactly("紧张");
         assertThat(response.scenes()).containsExactly("雨夜");
         assertThat(response.pace()).isEqualTo("fast");
-        assertThat(response.intensity()).isEqualTo(8);
+        assertThat(response.intensity()).isEqualTo(0.8);
+        assertThat(response.energy()).isEqualTo(0.7);
         assertThat(response.tags()).containsExactly("悬疑");
         assertThat(response.chapterEndPrompt()).isEqualTo("门外传来脚步声。");
         assertThat(response.modelName()).isEqualTo("test-model");

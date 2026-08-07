@@ -46,11 +46,11 @@ public class LlmService {
             segmentId,
             List.of("平静"),
             List.of(),
-            "steady",
-            3,
-            3,
-            2,
-            4,
+            "medium",
+            0.3,
+            0.3,
+            0.2,
+            0.4,
             List.of("平静"),
             "",
             modelName
@@ -64,11 +64,11 @@ public class LlmService {
                 segmentId,
                 stringList(root.path("moods")),
                 stringList(root.path("scenes")),
-                root.path("pace").asText("steady"),
-                root.path("intensity").asInt(3),
-                root.path("energy").asInt(3),
-                root.path("darkness").asInt(2),
-                root.path("warmth").asInt(4),
+                root.path("pace").asText("medium"),
+                root.path("intensity").asDouble(0.3),
+                root.path("energy").asDouble(0.3),
+                root.path("darkness").asDouble(0.2),
+                root.path("warmth").asDouble(0.4),
                 stringList(root.path("tags")),
                 root.path("chapterEndPrompt").asText(""),
                 modelName
@@ -95,7 +95,7 @@ public class LlmService {
     private static String chatPrompt(ChatRequest request) {
         return """
             你是陪读网文的朋友。请用简短、自然、轻松的语气回答用户问题。
-            必须严格基于允许上下文回答，保持防剧透，不要泄露上下文之外的后续情节。
+            必须严格基于允许上下文回答，保持防剧透，不要泄露、暗示、确认或引用上下文之外的后续情节。
             剧透风险：%s
             允许上下文：
             %s
@@ -107,6 +107,7 @@ public class LlmService {
         return """
             只输出结构化 JSON，不要输出解释性文字。
             请分析文本氛围，字段包含 moods, scenes, pace, intensity, energy, darkness, warmth, tags, chapterEndPrompt。
+            数值字段使用 0 到 1 的小数；pace 只能是 slow, medium, fast。
             文本：
             %s
             """.formatted(request.text());

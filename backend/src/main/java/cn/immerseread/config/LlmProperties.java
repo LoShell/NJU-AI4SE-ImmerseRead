@@ -11,7 +11,7 @@ public class LlmProperties {
     private String apiKey = "";
 
     public String getModelName() {
-        return modelName;
+        return firstNonBlank(System.getenv("OPENAI_MODEL"), modelName);
     }
 
     public void setModelName(String modelName) {
@@ -21,7 +21,7 @@ public class LlmProperties {
     }
 
     public String getApiUrl() {
-        return apiUrl;
+        return firstNonBlank(System.getenv("OPENAI_BASE_URL"), apiUrl);
     }
 
     public void setApiUrl(String apiUrl) {
@@ -31,10 +31,19 @@ public class LlmProperties {
     }
 
     public String getApiKey() {
-        return apiKey;
+        return firstNonBlank(System.getenv("OPENAI_API_KEY"), apiKey);
     }
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey == null ? "" : apiKey;
+    }
+
+    private static String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return "";
     }
 }
