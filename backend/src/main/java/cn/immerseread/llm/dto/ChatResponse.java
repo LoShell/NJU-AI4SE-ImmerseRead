@@ -1,4 +1,4 @@
 package cn.immerseread.llm.dto;
 
-public class ChatResponse {
+public record ChatResponse(String content, String modelName) {
 }

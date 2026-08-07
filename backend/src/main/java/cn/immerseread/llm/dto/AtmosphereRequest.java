@@ -1,4 +1,4 @@
 package cn.immerseread.llm.dto;
 
-public class AtmosphereRequest {
+public record AtmosphereRequest(String segmentId, String text) {
 }
