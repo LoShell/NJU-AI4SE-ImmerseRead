@@ -25,27 +25,30 @@ const makeProgress = (overrides: Partial<ReadingProgress>): ReadingProgress => (
 
 describe("buildAllowedContext", () => {
   it("excludes unread future text after progress", () => {
+    const readText = "前文线索一二三四五";
+    const unreadText = "未读真相：凶手是乙。";
     const segments = [
-      makeSegment({ id: "segment-1", startChar: 0, endChar: 10, text: "0123456789" }),
-      makeSegment({ id: "segment-2", startChar: 10, endChar: 20, text: "abcdefghij" })
+      makeSegment({ id: "segment-1", startChar: 0, text: readText }),
+      makeSegment({ id: "segment-2", startChar: readText.length, endChar: readText.length + unreadText.length, text: unreadText })
     ];
     const progress = makeProgress({
       segmentId: "segment-1",
-      charOffsetInSegment: 6,
-      absoluteCharOffset: 8
+      charOffsetInSegment: 5,
+      absoluteCharOffset: readText.length
     });
 
-    const context = buildAllowedContext({ segments, progress, question: "What happened?" });
+    const context = buildAllowedContext({ segments, progress, question: "凶手是谁？" });
 
-    expect(context.text).toContain("012345");
-    expect(context.text).not.toContain("6789");
-    expect(context.text).not.toContain("abcdefghij");
+    expect(context.text).toContain("前文线索");
+    expect(context.text).not.toContain("未读真相");
+    expect(context.text).not.toContain("凶手是乙");
     expect(context.contextStartChar).toBe(0);
-    expect(context.contextEndChar).toBe(6);
+    expect(context.contextEndChar).toBe(5);
   });
 
-  it("marks future-oriented questions as high risk", () => {
-    const segment = makeSegment({ startChar: 0, endChar: 16, text: "already read text" });
+  it("marks future-oriented Chinese questions as high risk", () => {
+    const text = "已经读过的内容";
+    const segment = makeSegment({ startChar: 0, text });
     const progress = makeProgress({
       segmentId: segment.id,
       charOffsetInSegment: segment.text.length,
@@ -55,13 +58,29 @@ describe("buildAllowedContext", () => {
     const context = buildAllowedContext({
       segments: [segment],
       progress,
-      question: "Will the boss appear later?"
+      question: "他后来是不是反派？"
     });
 
     expect(context.spoilerRisk).toBe("high");
-    expect(context.instruction).toContain(
-      "鍙兘鍩轰簬宸茶鍐呭鍥炵瓟锛涗笉瑕佹殫绀恒€佺‘璁ゆ垨寮曠敤鏈鍓ф儏銆?"
-    );
+    expect(context.instruction).toContain("只能基于已读内容回答");
+    expect(context.instruction).toContain("不要暗示、确认或引用未读剧情");
+  });
+
+  it("marks English boss questions as high risk", () => {
+    const segment = makeSegment({ startChar: 0, endChar: 12, text: "already read" });
+    const progress = makeProgress({
+      segmentId: segment.id,
+      charOffsetInSegment: segment.text.length,
+      absoluteCharOffset: segment.endChar
+    });
+
+    const context = buildAllowedContext({
+      segments: [segment],
+      progress,
+      question: "Will the BOSS appear later?"
+    });
+
+    expect(context.spoilerRisk).toBe("high");
   });
 
   it("trims long read-so-far context to maxChars from the end", () => {
@@ -75,7 +94,7 @@ describe("buildAllowedContext", () => {
     const context = buildAllowedContext({
       segments: [segment],
       progress,
-      question: "Summarize",
+      question: "总结一下",
       maxChars: 4
     });
 
@@ -85,7 +104,8 @@ describe("buildAllowedContext", () => {
   });
 
   it("includes selected text and annotation note when present", () => {
-    const segment = makeSegment({ startChar: 0, endChar: 12, text: "read context" });
+    const text = "已读上下文";
+    const segment = makeSegment({ startChar: 0, text });
     const progress = makeProgress({
       segmentId: segment.id,
       charOffsetInSegment: segment.text.length,
@@ -95,15 +115,15 @@ describe("buildAllowedContext", () => {
     const context = buildAllowedContext({
       segments: [segment],
       progress,
-      question: "Explain this",
-      selectedText: "read",
-      annotationNote: "important opening"
+      question: "解释这里",
+      selectedText: "已读",
+      annotationNote: "这里像是在铺垫"
     });
 
-    expect(context.text).toContain("read context");
-    expect(context.text).toContain("Selected text: read");
-    expect(context.text).toContain("Annotation note: important opening");
-    expect(context.contextEndChar).toBe(12);
+    expect(context.text).toContain("已读上下文");
+    expect(context.text).toContain("Selected text: 已读");
+    expect(context.text).toContain("Annotation note: 这里像是在铺垫");
+    expect(context.contextEndChar).toBe(text.length);
   });
 
   it("sorts unsorted segments before building context", () => {

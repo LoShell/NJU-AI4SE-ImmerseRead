@@ -21,20 +21,20 @@ export interface AllowedContext {
 
 const DEFAULT_MAX_CHARS = 6000;
 const SPOILER_SAFE_INSTRUCTION =
-  "鍙兘鍩轰簬宸茶鍐呭鍥炵瓟锛涗笉瑕佹殫绀恒€佺‘璁ゆ垨寮曠敤鏈鍓ф儏銆?";
+  "只能基于已读内容回答；不要暗示、确认或引用未读剧情。";
 
 const FUTURE_ORIENTED_KEYWORDS = [
-  "鍚庢潵",
-  "缁撳眬",
-  "鐪熺浉",
-  "鍑舵墜",
-  "鏈€缁坄",
+  "后来",
+  "结局",
+  "真相",
+  "凶手",
+  "最终",
   "boss",
-  "鑳屽彌",
-  "姝讳簡鍚梎",
-  "鏄笉鏄弽娲綻",
-  "浼氫笉浼歚",
-  "涔嬪悗"
+  "背叛",
+  "死了吗",
+  "是不是反派",
+  "会不会",
+  "之后"
 ];
 
 interface ContextPart {
