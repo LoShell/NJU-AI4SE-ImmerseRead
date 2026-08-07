@@ -1,5 +1,65 @@
 # AGENT_LOG
 
+## 2026-08-07
+
+### Task: Worktree And Verification Setup
+
+- Branch/worktree: `feature/immerseread-implementation` at `.worktrees/immerseread-implementation`.
+- Method: git worktree isolation, one implementation branch for the current feature PR.
+- Commit: `e8d5d2c chore: prepare local verification tools`.
+- Human/environment input:
+  - User switched Node to `v24.14.1` and npm to `11.11.0`.
+  - User installed frontend dependencies and confirmed local Vite/test execution works outside the Codex sandbox.
+- Verification:
+  - `npm run build` passed.
+  - `mvn test` passed.
+  - Playwright package and browsers were later verified as installed.
+
+### Task 1: Project Scaffold
+
+- Implementer subagent: Avicenna.
+- Commit: `281876b chore: scaffold ImmerseRead app`.
+- Reviewer subagent: Darwin.
+- Review result:
+  - Found original frontend lockfile reproducibility issue and stale README backend test count.
+  - Lockfile was repaired by environment-prep commit `e8d5d2c`.
+  - README verification note was repaired by `c3405ef docs: update scaffold verification notes`.
+- Human verification:
+  - `npm run test -- App.test.tsx` passed locally on 2026-08-07.
+- Codex verification:
+  - `npm run build` passed.
+  - `mvn test` passed.
+- Manual modifications:
+  - Codex updated README test count after review.
+
+### Task 2: Domain Models And TXT Parser
+
+- Implementer subagent: Einstein.
+- Commit: `fd186e1 feat: parse txt books into readable segments`.
+- Reviewer subagent: Hypatia.
+- Review result: `NO_BLOCKING_FINDINGS`.
+- Manual modifications:
+  - Codex restored corrupted Chinese parser fixtures, chunk titles, and chapter patterns in `14a0553 fix: restore readable txt parser fixtures`.
+- Human verification:
+  - `npm run test -- txtParser.test.ts` passed locally on 2026-08-07.
+- Codex verification:
+  - `npm run build` passed.
+
+### Task 3: IndexedDB Local Library
+
+- Implementer subagent: Carson.
+- Commit: `eca67ca feat: persist local reader library`.
+- Reviewer subagent: Copernicus.
+- Review result: `NO_BLOCKING_FINDINGS`.
+- Residual risks:
+  - Repository tests use a mocked `idb`, so they do not exercise the real browser upgrade path.
+  - Re-saving the same `book.id` with a different segment set could leave stale old segments; current parser generates fresh book ids, so this is outside the immediate path.
+- Human verification:
+  - `npm run test -- libraryRepository.test.ts` passed locally on 2026-08-07.
+- Codex verification:
+  - `npm run build` passed.
+  - `mvn test` passed.
+
 ## 2026-08-06
 
 ### Task: Brainstorming

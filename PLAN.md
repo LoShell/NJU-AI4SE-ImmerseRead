@@ -8,6 +8,28 @@
 
 **Tech Stack:** React, TypeScript, Vite, Vitest, React Testing Library, Playwright, IndexedDB, Java 17, Spring Boot 4.1.0, JUnit 5, Docker Compose, OpenAI-compatible Chat Completions API.
 
+## Implementation Progress
+
+> This section is updated continuously to satisfy the course requirement that each completed task is marked with its commit hash.
+
+- [x] Task 1: 项目脚手架与一键命令
+  - Implementation: `281876b` (`chore: scaffold ImmerseRead app`) by subagent Avicenna.
+  - Environment follow-up: `e8d5d2c` (`chore: prepare local verification tools`) by Codex/user environment repair.
+  - Review follow-up: `c3405ef` (`docs: update scaffold verification notes`) by Codex after subagent review.
+  - Human verification: App smoke test passed locally on 2026-08-07.
+- [x] Task 2: 领域模型与 TXT 解析器
+  - Implementation: `fd186e1` (`feat: parse txt books into readable segments`) by subagent Einstein.
+  - Human/Codex fix: `14a0553` (`fix: restore readable txt parser fixtures`) restored readable Chinese fixtures and parser patterns.
+  - Review: subagent Hypatia returned `NO_BLOCKING_FINDINGS`.
+  - Human verification: `txtParser.test.ts` passed locally on 2026-08-07.
+- [x] Task 3: IndexedDB 本地书库
+  - Implementation: `eca67ca` (`feat: persist local reader library`) by subagent Carson.
+  - Review: subagent Copernicus returned `NO_BLOCKING_FINDINGS`.
+  - Human verification: `libraryRepository.test.ts` passed locally on 2026-08-07.
+- [ ] Task 4: SpoilerGuard 防剧透上下文
+- [ ] Task 5: BGM 类型、内置音轨与推荐规则
+- [ ] Task 6: Spring Boot LLM 代理与凭据边界
+
 ## Global Constraints
 
 - 第一版只支持 TXT，不支持 EPUB 或 PDF。
