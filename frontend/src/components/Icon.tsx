@@ -7,6 +7,8 @@ type IconName =
   | "pause"
   | "play"
   | "settings"
+  | "skipBack"
+  | "skipForward"
   | "trash"
   | "upload";
 
@@ -23,6 +25,8 @@ const paths: Record<IconName, string[]> = {
   pause: ["M8 6v12", "M16 6v12"],
   play: ["M8 5v14l11-7-11-7Z"],
   settings: ["M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z", "M4 12h2", "M18 12h2", "M12 4v2", "M12 18v2"],
+  skipBack: ["M19 5v14", "M15 6l-8 6 8 6V6Z"],
+  skipForward: ["M5 5v14", "M9 6l8 6-8 6V6Z"],
   trash: ["M5 7h14", "M9 7V5h6v2", "M8 10v8", "M16 10v8", "M7 7l1 13h8l1-13"],
   upload: ["M12 16V5", "M8 9l4-4 4 4", "M5 18h14"]
 };

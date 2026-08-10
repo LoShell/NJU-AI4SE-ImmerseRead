@@ -1,5 +1,31 @@
 # AGENT_LOG
 
+## 2026-08-11
+
+### Task 10: Reader Polish For BGM Queue, Real Progress, And Night Mode
+
+- Executor: Codex main conversation, no subagent, per user request to keep frontend context continuous.
+- Key decisions:
+  - Keep BGM recommendation switching confirmation-based.
+  - Treat previous/next and ended-to-next as normal player queue controls over playable tracks only.
+  - Keep system BGM metadata in source code and optional demo audio in `frontend/public/bgm/`.
+  - Keep book text, annotations, reading progress, chat records, and uploaded audio browser-local for the current MVP.
+- TDD record:
+  - Added failing tests for playable BGM previous/next, audio ended-to-next, scroll-derived chapter progress, and night-mode toolbar switching.
+  - Red run failed for the expected missing queue behavior, missing night button, and placeholder progress.
+  - Implemented the minimum queue, scroll progress, icon, and theme changes needed to pass.
+- Implementation:
+  - Added previous/next BGM controls that skip tracks without audio references.
+  - Added hidden local audio `ended` handling to continue to the next playable track.
+  - Added scroll-derived chapter progress and full-book progress updates from the central reader pane.
+  - Added a separate night-mode toolbar button and night-theme CSS.
+  - Updated README, SPEC, and PLAN notes for BGM demo audio placement and current MVP behavior.
+- Verification:
+  - `cd frontend && npm run test -- App.test.tsx BgmDock.test.tsx`: 17 tests passed.
+  - `cd frontend && npm run test`: 50 tests passed.
+  - `cd frontend && npm run build`: passed.
+- Commit: pending user review.
+
 ## 2026-08-10
 
 ### Task 9: Atmosphere-Based BGM Experience

@@ -70,7 +70,10 @@ button:disabled {
 
 .reader-theme-night {
   color: #e8ecdf;
-  background: #171d1a;
+  background:
+    linear-gradient(90deg, rgba(63, 103, 76, 0.08), transparent 22%),
+    radial-gradient(circle at center, rgba(31, 39, 35, 0.96), rgba(15, 20, 18, 0.98)),
+    #111614;
 }
 
 .reader-theme-sepia {
@@ -102,6 +105,54 @@ button:disabled {
 .reader-theme-night .companion-panel {
   background: rgba(24, 31, 29, 0.88);
   border-color: rgba(232, 236, 223, 0.12);
+}
+
+.reader-theme-night .reading-stage {
+  background:
+    linear-gradient(90deg, rgba(114, 148, 119, 0.07), transparent 18%, transparent 82%, rgba(114, 148, 119, 0.07)),
+    #141b18;
+}
+
+.reader-theme-night .reader-floating-toolbar,
+.reader-theme-night .panel-tabs,
+.reader-theme-night .assistant-card,
+.reader-theme-night .bgm-player-card,
+.reader-theme-night .panel-section,
+.reader-theme-night .chat-form {
+  border-color: rgba(220, 232, 211, 0.12);
+  background: rgba(26, 34, 30, 0.86);
+}
+
+.reader-theme-night .reader-floating-toolbar button,
+.reader-theme-night .panel-tabs button,
+.reader-theme-night .button-secondary,
+.reader-theme-night .assistant-card button,
+.reader-theme-night .icon-button,
+.reader-theme-night .library-manage-button {
+  color: #dbe4d6;
+  border-color: rgba(220, 232, 211, 0.14);
+  background: rgba(34, 45, 39, 0.86);
+}
+
+.reader-theme-night .segment-text,
+.reader-theme-night .reader-empty,
+.reader-theme-night .segment-header h2 {
+  color: #e7eadf;
+}
+
+.reader-theme-night .book-meta p,
+.reader-theme-night .book-meta small,
+.reader-theme-night .import-status,
+.reader-theme-night .empty-hint,
+.reader-theme-night .assistant-card p,
+.reader-theme-night .bgm-player-card p,
+.reader-theme-night .bgm-library-item p,
+.reader-theme-night .reader-footer {
+  color: #aab7a9;
+}
+
+.reader-theme-night .reader-page {
+  background: transparent;
 }
 
 .panel-content {
@@ -138,8 +189,7 @@ button:disabled {
 .progress-block > div,
 .reader-footer,
 .bgm-player-card,
-.bgm-player-controls,
-.bgm-library-item {
+.bgm-player-controls {
   display: flex;
   align-items: center;
 }
@@ -207,6 +257,15 @@ button:disabled {
     transform 160ms ease;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .button-primary {
   padding: 0 13px;
   color: #ffffff;
@@ -231,6 +290,12 @@ button:disabled {
 .assistant-card button:hover {
   border-color: rgba(48, 121, 80, 0.34);
   background: rgba(237, 246, 237, 0.92);
+}
+
+.button-icon-only {
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
 }
 
 .button-danger {
@@ -484,10 +549,6 @@ button:disabled {
 .companion-panel::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: rgba(48, 88, 58, 0.22);
-}
-
-.reader-theme-night .reader-page {
-  background: #202824;
 }
 
 .reader-theme-sepia .reading-stage {
@@ -751,6 +812,11 @@ button:disabled {
   gap: 8px;
 }
 
+.bgm-library-actions {
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+}
+
 .annotation-list,
 .bgm-dock,
 .bgm-upload,
@@ -761,9 +827,20 @@ button:disabled {
 }
 
 .annotation-item,
-.bgm-recommendation,
-.bgm-library-item {
+.bgm-recommendation {
   gap: 10px;
+  padding: 11px;
+  border: 1px solid rgba(56, 66, 56, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.54);
+}
+
+.bgm-library-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
   padding: 11px;
   border: 1px solid rgba(56, 66, 56, 0.1);
   border-radius: 8px;
@@ -870,13 +947,19 @@ button:disabled {
   width: 100%;
 }
 
-.bgm-library-item {
-  align-items: flex-start;
+.bgm-library-meta {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
 }
 
-.bgm-library-item > div:first-child {
+.bgm-track-title,
+.bgm-library-item p,
+.bgm-library-item small {
   min-width: 0;
-  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .bgm-library-item small,

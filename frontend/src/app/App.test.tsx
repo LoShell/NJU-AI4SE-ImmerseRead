@@ -31,6 +31,8 @@ describe("App", () => {
     expect(screen.queryByText("第三章 · 雨夜来客")).not.toBeInTheDocument();
     expect(screen.queryByRole("status", { name: "本地保存提醒" })).not.toBeInTheDocument();
     expect(screen.getByText("导入 TXT 后开始阅读。")).toBeInTheDocument();
+    expect(document.querySelector(".panel-toggle")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "字体" })).not.toBeInTheDocument();
   });
 
   it("keeps the BGM player docked in the right panel outside the active tab", () => {
@@ -62,7 +64,23 @@ describe("App", () => {
     });
     expect(screen.getByText("The rain became urgent.")).toBeInTheDocument();
     expect(screen.getByText("阅读进度")).toBeInTheDocument();
-    expect(screen.getByText("100%")).toBeInTheDocument();
+    expect(screen.getAllByText(/\d+%/).length).toBeGreaterThan(0);
+  });
+
+  it("truncates very long chapter names in the left chapter list", async () => {
+    render(<App />);
+
+    const longTitle = "1. 这是一个非常非常非常长到不应该撑开左侧栏的章节标题";
+    const file = new File([`${longTitle}\nThe door opened.\n\n2. 后续章节\nThe rain came.`], "long-title.txt", { type: "text/plain" });
+
+    fireEvent.change(screen.getByLabelText("上传 TXT 小说"), {
+      target: { files: [file] }
+    });
+
+    const chapterButton = await screen.findByRole("button", { name: longTitle });
+
+    expect(within(chapterButton).getByText("1. 这是一个非常非常非常长到…")).toBeInTheDocument();
+    expect(chapterButton).toHaveAttribute("title", longTitle);
   });
 
   it("shows the active annotation editor at the top of the right annotation panel", async () => {
@@ -99,6 +117,34 @@ describe("App", () => {
     expect(within(libraryPanel).getByText("添加本地音频")).toBeInTheDocument();
     expect(within(libraryPanel).queryByAltText("默认 BGM 封面")).not.toBeInTheDocument();
     expect(within(libraryPanel).queryByRole("button", { name: /分析当前氛围/ })).not.toBeInTheDocument();
+  });
+
+  it("updates the chapter progress from the central reader scroll position", async () => {
+    render(<App />);
+
+    uploadDemoBook();
+
+    await screen.findByRole("heading", { name: "Chapter 1 Dawn" });
+    const readingArea = screen.getByRole("region", { name: "阅读区" });
+    const readerPage = await within(readingArea).findByRole("article");
+    Object.defineProperty(readerPage, "scrollHeight", { configurable: true, value: 200 });
+    Object.defineProperty(readerPage, "clientHeight", { configurable: true, value: 100 });
+    Object.defineProperty(readerPage, "scrollTop", { configurable: true, value: 50 });
+
+    fireEvent.scroll(readerPage);
+
+    expect(screen.getByText("本章进度 50%")).toBeInTheDocument();
+  });
+
+  it("toggles night reading mode from the toolbar", () => {
+    render(<App />);
+
+    const shell = screen.getByRole("main");
+    expect(shell).toHaveClass("reader-theme-paper");
+
+    fireEvent.click(screen.getByRole("button", { name: "夜视" }));
+
+    expect(shell).toHaveClass("reader-theme-night");
   });
 });
 

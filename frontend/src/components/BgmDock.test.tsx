@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentProps } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { BgmRecommendation, BgmTrack } from "../bgm/bgmTypes";
 import { BgmDock } from "./BgmDock";
 
@@ -36,6 +36,23 @@ const uploadedTracks: BgmTrack[] = [
   }
 ];
 
+const twoUploadedTracks: BgmTrack[] = [
+  ...uploadedTracks,
+  {
+    id: "local-wind",
+    title: "本地风声",
+    source: "user-uploaded",
+    fileRef: "blob:local-wind",
+    moods: ["孤独"],
+    scenes: ["荒原"],
+    energy: 0.3,
+    darkness: 0.5,
+    warmth: 0.2,
+    tempo: "slow",
+    createdAt: "2026-08-07T02:00:00.000Z"
+  }
+];
+
 const recommendations: BgmRecommendation[] = [
   {
     trackId: "night-suspense",
@@ -46,6 +63,17 @@ const recommendations: BgmRecommendation[] = [
 ];
 
 describe("BgmDock", () => {
+  beforeEach(() => {
+    Object.defineProperty(HTMLMediaElement.prototype, "play", {
+      configurable: true,
+      value: vi.fn(async () => undefined)
+    });
+    Object.defineProperty(HTMLMediaElement.prototype, "pause", {
+      configurable: true,
+      value: vi.fn()
+    });
+  });
+
   it("renders a compact player card with the default BGM cover", () => {
     renderDock({ tracks: uploadedTracks });
 
@@ -53,6 +81,87 @@ describe("BgmDock", () => {
     expect(screen.getByText("氛围推荐")).toBeInTheDocument();
     expect(screen.getByText("我的曲库")).toBeInTheDocument();
     expect(screen.getByText("添加本地音频")).toBeInTheDocument();
+  });
+
+  it("disables player controls until a playable uploaded track is selected", () => {
+    renderDock({ tracks });
+
+    expect(screen.getByRole("button", { name: "播放" })).toBeDisabled();
+    expect(screen.getByText("先在曲库中播放一首本地音频。")).toBeInTheDocument();
+  });
+
+  it("uses the custom player button for uploaded audio without showing native controls", () => {
+    const onTogglePlay = vi.fn();
+
+    renderDock({
+      tracks: uploadedTracks,
+      currentTrackId: "local-rain",
+      onTogglePlay
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "播放" }));
+
+    expect(onTogglePlay).toHaveBeenCalledOnce();
+    expect(screen.getByLabelText("本地音频播放器")).toHaveAttribute("src", "blob:local-rain");
+    expect(screen.getByLabelText("本地音频播放器")).not.toHaveAttribute("controls");
+  });
+
+  it("drives the hidden audio element from the custom play state", () => {
+    const { rerender } = renderDock({
+      tracks: uploadedTracks,
+      currentTrackId: "local-rain"
+    });
+
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+
+    rerender(
+      <BgmDock
+        currentTrackId="local-rain"
+        isAnalyzing={false}
+        isPlaying
+        lockedTrackId={undefined}
+        onAnalyze={vi.fn()}
+        onConfirmSwitch={vi.fn()}
+        onDeleteTrack={vi.fn()}
+        onToggleLock={vi.fn()}
+        onTogglePlay={vi.fn()}
+        onUploadTrack={vi.fn()}
+        recommendations={recommendations}
+        tracks={uploadedTracks}
+      />
+    );
+
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+  });
+
+  it("switches playable uploaded tracks in list order and skips missing built-in audio", () => {
+    const onConfirmSwitch = vi.fn();
+
+    renderDock({
+      tracks: twoUploadedTracks,
+      currentTrackId: "local-rain",
+      onConfirmSwitch
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "下一首" }));
+    fireEvent.click(screen.getByRole("button", { name: "上一首" }));
+
+    expect(onConfirmSwitch).toHaveBeenNthCalledWith(1, "local-wind");
+    expect(onConfirmSwitch).toHaveBeenNthCalledWith(2, "local-wind");
+  });
+
+  it("continues to the next playable track when the current local audio ends", () => {
+    const onConfirmSwitch = vi.fn();
+
+    renderDock({
+      tracks: twoUploadedTracks,
+      currentTrackId: "local-rain",
+      onConfirmSwitch
+    });
+
+    fireEvent.ended(screen.getByLabelText("本地音频播放器"));
+
+    expect(onConfirmSwitch).toHaveBeenCalledWith("local-wind");
   });
 
   it("requires confirmation before switching to a recommended track", () => {
@@ -66,27 +175,6 @@ describe("BgmDock", () => {
     fireEvent.click(screen.getByRole("button", { name: "确认切换" }));
 
     expect(onConfirmSwitch).toHaveBeenCalledWith("night-suspense");
-  });
-
-  it("shows current playback controls and exposes the lock action", () => {
-    const onToggleLock = vi.fn();
-    const onTogglePlay = vi.fn();
-
-    renderDock({
-      currentTrackId: "night-suspense",
-      isPlaying: true,
-      onToggleLock,
-      onTogglePlay
-    });
-
-    const dock = screen.getByLabelText("BGM 播放与推荐");
-    expect(within(dock).getAllByText("夜色疑云").length).toBeGreaterThan(0);
-
-    fireEvent.click(screen.getByRole("button", { name: "暂停" }));
-    fireEvent.click(screen.getByRole("button", { name: "锁定当前曲" }));
-
-    expect(onTogglePlay).toHaveBeenCalledOnce();
-    expect(onToggleLock).toHaveBeenCalledOnce();
   });
 
   it("submits local audio metadata without uploading the audio to the backend", () => {
@@ -112,17 +200,7 @@ describe("BgmDock", () => {
     );
   });
 
-  it("renders an audio player for uploaded tracks with a local file reference", () => {
-    renderDock({
-      tracks: uploadedTracks,
-      currentTrackId: "local-rain",
-      recommendations: []
-    });
-
-    expect(screen.getByLabelText("本地音频播放器")).toHaveAttribute("src", "blob:local-rain");
-  });
-
-  it("shows uploaded tracks in my library and allows selecting or deleting them", () => {
+  it("shows uploaded tracks in my library and allows playing or deleting them", () => {
     const onConfirmSwitch = vi.fn();
     const onDeleteTrack = vi.fn();
 
@@ -137,7 +215,10 @@ describe("BgmDock", () => {
     expect(within(library).getByText("本地雨声")).toBeInTheDocument();
     expect(within(library).getByText("安静 / 雨")).toBeInTheDocument();
 
-    fireEvent.click(within(library).getByRole("button", { name: "设为当前 本地雨声" }));
+    const missingAudioButton = within(library).getByRole("button", { name: "缺少音频 夜色疑云" });
+    expect(missingAudioButton).toBeDisabled();
+    expect(missingAudioButton).toHaveClass("button-icon-only");
+    fireEvent.click(within(library).getByRole("button", { name: "播放 本地雨声" }));
     fireEvent.click(within(library).getByRole("button", { name: "删除 本地雨声" }));
 
     expect(onConfirmSwitch).toHaveBeenCalledWith("local-rain");

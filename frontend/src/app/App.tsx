@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type UIEvent } from "react";
 import { createAnnotationFromSelection, type AnnotationDraft } from "../annotations/annotationRanges";
 import { builtInTracks } from "../bgm/builtInTracks";
 import { recommendBgm } from "../bgm/bgmMatcher";
@@ -56,6 +56,7 @@ export function App() {
   const [theme, setTheme] = useState<ReaderTheme>("paper");
   const [fontSize, setFontSize] = useState(17);
   const [lineHeight, setLineHeight] = useState(1.78);
+  const [chapterProgressPercent, setChapterProgressPercent] = useState(0);
   const [rightTab, setRightTab] = useState<RightPanelTab>("companion");
   const [importStatus, setImportStatus] = useState("等待上传本地 TXT");
   const [userBgmTracks, setUserBgmTracks] = useState<BgmTrack[]>([]);
@@ -65,8 +66,7 @@ export function App() {
   const [lockedTrackId, setLockedTrackId] = useState<string>();
   const [isBgmPlaying, setIsBgmPlaying] = useState(false);
   const [isAnalyzingAtmosphere, setIsAnalyzingAtmosphere] = useState(false);
-  const [isLibraryCollapsed, setIsLibraryCollapsed] = useState(false);
-  const [isCompanionCollapsed, setIsCompanionCollapsed] = useState(false);
+  const readerPageRef = useRef<HTMLElement>(null);
 
   const allBgmTracks = useMemo(() => [...builtInTracks, ...userBgmTracks], [userBgmTracks]);
 
@@ -125,6 +125,14 @@ export function App() {
       setBgmRecommendations(savedProfile ? recommendBgm(savedProfile, allBgmTracks, { lockedTrackId }) : []);
     });
   }, [activeSegment?.id, allBgmTracks, lockedTrackId, readerState?.book.id]);
+
+  useEffect(() => {
+    const readerPage = readerPageRef.current;
+    if (readerPage) {
+      readerPage.scrollTop = 0;
+    }
+    setChapterProgressPercent(readerPage ? calculateScrollProgress(readerPage) : 0);
+  }, [activeSegment?.id]);
 
   async function handleTxtUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -195,7 +203,6 @@ export function App() {
       })
     );
     setRightTab("annotations");
-    setIsCompanionCollapsed(false);
   }
 
   async function persistAnnotation(draft: AnnotationDraft) {
@@ -214,7 +221,6 @@ export function App() {
   function askCompanionWithAnnotation(draft: AnnotationDraft) {
     setCompanionContext(draft);
     setRightTab("companion");
-    setIsCompanionCollapsed(false);
   }
 
   async function persistChatMessage(message: ChatMessage) {
@@ -247,6 +253,19 @@ export function App() {
 
   function toggleBgmLock() {
     setLockedTrackId((current) => (current ? undefined : currentTrackId));
+  }
+
+  function updateReadingProgressFromScroll(event: UIEvent<HTMLElement>) {
+    if (!activeSegment) {
+      return;
+    }
+
+    const scrollProgress = calculateScrollProgress(event.currentTarget);
+    const charOffset = Math.round(activeSegment.text.length * (scrollProgress / 100));
+    const nextProgress = createProgress(activeSegment, charOffset);
+    setChapterProgressPercent(scrollProgress);
+    setProgress(nextProgress);
+    void saveReadingProgress(nextProgress);
   }
 
   async function uploadBgmTrack(input: UploadedBgmInput) {
@@ -285,20 +304,9 @@ export function App() {
 
   return (
     <main
-      className={`app-shell reader-theme-${theme}${isLibraryCollapsed ? " library-collapsed" : ""}${
-        isCompanionCollapsed ? " companion-collapsed" : ""
-      }`}
+      className={`app-shell reader-theme-${theme}`}
     >
       <aside className="library-panel">
-        <button
-          aria-label={isLibraryCollapsed ? "展开章节栏" : "折叠章节栏"}
-          className="icon-button panel-toggle"
-          onClick={() => setIsLibraryCollapsed((value) => !value)}
-          type="button"
-        >
-          <Icon name="chevron" />
-        </button>
-
         <div className="panel-content library-content">
           <div className="brand-block">
             <div className="brand-mark" aria-hidden="true">
@@ -363,10 +371,11 @@ export function App() {
                   className="chapter-button"
                   key={segment.id}
                   onClick={() => void selectSegment(segment)}
+                  title={segment.title}
                   type="button"
                 >
                   <Icon name="note" />
-                  <span>{segment.title}</span>
+                  <span>{truncateLabel(segment.title)}</span>
                 </button>
               ))
             ) : (
@@ -389,16 +398,18 @@ export function App() {
           <button type="button" onClick={() => setFontSize((value) => Math.min(24, value + 1))}>
             A+
           </button>
-          <button type="button">字体</button>
           <button type="button" onClick={() => setLineHeight((value) => Number(Math.min(2.2, value + 0.1).toFixed(2)))}>
             行距
           </button>
           <button type="button" onClick={() => setTheme(theme === "paper" ? "sepia" : "paper")}>
             主题
           </button>
+          <button type="button" onClick={() => setTheme(theme === "night" ? "paper" : "night")}>
+            夜视
+          </button>
         </div>
 
-        <article className="reader-page">
+        <article className="reader-page" ref={readerPageRef} onScroll={updateReadingProgressFromScroll}>
           {activeSegment ? (
             <>
               <header className="segment-header">
@@ -419,22 +430,13 @@ export function App() {
         </article>
 
         <footer className="reader-footer">
-          <span>本章进度 {activeSegment ? "100%" : "--"}</span>
+          <span>本章进度 {activeSegment ? `${chapterProgressPercent}%` : "--"}</span>
           <div className="footer-line" />
           <span>本章 {chapterWordCount} 字</span>
         </footer>
       </section>
 
       <aside aria-label="阅读陪伴面板" className="companion-panel">
-        <button
-          aria-label={isCompanionCollapsed ? "展开陪伴面板" : "折叠陪伴面板"}
-          className="icon-button panel-toggle"
-          onClick={() => setIsCompanionCollapsed((value) => !value)}
-          type="button"
-        >
-          <Icon name="chevron" />
-        </button>
-
         <div className="panel-content companion-content">
           <div className="panel-tabs">
             {(Object.keys(TAB_META) as RightPanelTab[]).map((tabName) => (
@@ -583,4 +585,17 @@ function hydrateBgmTrack(track: BgmTrack): BgmTrack {
     ...track,
     fileRef: URL.createObjectURL(track.audioBlob)
   };
+}
+
+function calculateScrollProgress(element: HTMLElement): number {
+  const maxScroll = element.scrollHeight - element.clientHeight;
+  if (maxScroll <= 0) {
+    return 100;
+  }
+
+  return Math.min(100, Math.max(0, Math.round((element.scrollTop / maxScroll) * 100)));
+}
+
+function truncateLabel(value: string, maxLength = 15): string {
+  return value.length > maxLength ? `${value.slice(0, maxLength)}…` : value;
 }

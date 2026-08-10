@@ -39,7 +39,21 @@
   - Human/Codex fix: `3a5032e` (`fix: align llm proxy messages and atmosphere scale`) restored readable prompts/messages and aligned atmosphere numbers with the frontend 0-1 scale.
   - Verification: `mvn test` passed with 11 tests on 2026-08-07.
 
+### Current Main-Conversation Frontend Polish
+
+- [x] Task 10: Reader polish for BGM queue, real progress, and night mode
+  - Implementation: pending commit by Codex main conversation, no subagent.
+  - Scope: playable BGM previous/next and ended-to-next behavior, scroll-derived chapter/book progress, night reading mode, and documentation updates.
+  - Verification: `cd frontend && npm run test -- App.test.tsx BgmDock.test.tsx` passed locally on 2026-08-11.
+
 ## Global Constraints
+
+### Implemented Refinements
+
+- BGM recommendation switches still require reader confirmation. Normal player controls now support previous/next within the playable local/system-audio queue, and an ended local audio element advances to the next playable track.
+- Built-in BGM metadata lives in `frontend/src/bgm/builtInTracks.ts`. Demo audio, if used, should be placed under `frontend/public/bgm/` and referenced by `fileRef: "/bgm/<file>"`.
+- Chapter progress is derived from the central reader scroll container. Full-book progress is recalculated from the active segment offset plus the current intra-chapter scroll offset.
+- Night mode is exposed as a separate reader toolbar button after the theme control.
 
 - 第一版只支持 TXT，不支持 EPUB 或 PDF。
 - 小说正文、批注、阅读进度、聊天记录和用户上传 BGM 默认只保存在浏览器本地。
