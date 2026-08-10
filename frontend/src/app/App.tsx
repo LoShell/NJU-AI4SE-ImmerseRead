@@ -1,13 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { createAnnotationFromSelection, type AnnotationDraft } from "../annotations/annotationRanges";
+import { builtInTracks } from "../bgm/builtInTracks";
+import { recommendBgm } from "../bgm/bgmMatcher";
+import type { AtmosphereProfile, BgmRecommendation, BgmTrack } from "../bgm/bgmTypes";
 import { AnnotationToolbar } from "../components/AnnotationToolbar";
+import { BgmDock, type UploadedBgmInput } from "../components/BgmDock";
 import { CompanionPanel } from "../components/CompanionPanel";
 import type { Annotation, Book, ChatMessage, ReadingProgress, Segment } from "../domain/models";
+import { analyzeAtmosphere } from "../llm/client";
 import { parseTxtBook } from "../reader/txtParser";
 import {
+  deleteBgmTrack,
+  getAtmosphereProfile,
   listAnnotations,
+  listBgmTracks,
   listChatMessages,
   saveAnnotation,
+  saveAtmosphereProfile,
+  saveBgmTrack,
   saveChatMessage,
   saveParsedBook,
   saveReadingProgress
@@ -40,6 +50,15 @@ export function App() {
   const [lineHeight, setLineHeight] = useState(1.85);
   const [rightTab, setRightTab] = useState<RightPanelTab>("companion");
   const [importStatus, setImportStatus] = useState("等待上传本地 TXT");
+  const [userBgmTracks, setUserBgmTracks] = useState<BgmTrack[]>([]);
+  const [atmosphereProfile, setAtmosphereProfile] = useState<AtmosphereProfile>();
+  const [bgmRecommendations, setBgmRecommendations] = useState<BgmRecommendation[]>([]);
+  const [currentTrackId, setCurrentTrackId] = useState<string>();
+  const [lockedTrackId, setLockedTrackId] = useState<string>();
+  const [isBgmPlaying, setIsBgmPlaying] = useState(false);
+  const [isAnalyzingAtmosphere, setIsAnalyzingAtmosphere] = useState(false);
+
+  const allBgmTracks = useMemo(() => [...builtInTracks, ...userBgmTracks], [userBgmTracks]);
 
   const activeSegment = useMemo(() => {
     if (!readerState) {
@@ -49,17 +68,27 @@ export function App() {
   }, [activeSegmentId, readerState]);
 
   useEffect(() => {
+    void listBgmTracks().then((tracks) => setUserBgmTracks(tracks.map(hydrateBgmTrack)));
+  }, []);
+
+  useEffect(() => {
     if (!readerState?.book.id || !activeSegment?.id) {
       setAnnotations([]);
       setChatMessages([]);
+      setAtmosphereProfile(undefined);
+      setBgmRecommendations([]);
       return;
     }
 
     void listAnnotations(readerState.book.id, activeSegment.id).then(setAnnotations);
     void listChatMessages(readerState.book.id).then(setChatMessages);
-  }, [activeSegment?.id, readerState?.book.id]);
+    void getAtmosphereProfile(activeSegment.id).then((savedProfile) => {
+      setAtmosphereProfile(savedProfile);
+      setBgmRecommendations(savedProfile ? recommendBgm(savedProfile, allBgmTracks, { lockedTrackId }) : []);
+    });
+  }, [activeSegment?.id, allBgmTracks, lockedTrackId, readerState?.book.id]);
 
-  async function handleTxtUpload(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleTxtUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) {
       return;
@@ -80,6 +109,8 @@ export function App() {
       setActiveSegmentId(firstSegment?.id);
       setAnnotationDraft(undefined);
       setCompanionContext(undefined);
+      setAtmosphereProfile(undefined);
+      setBgmRecommendations([]);
       if (firstSegment) {
         setProgress(createProgress(firstSegment, firstSegment.text.length));
       }
@@ -151,6 +182,65 @@ export function App() {
     setChatMessages((current) =>
       current.some((saved) => saved.id === message.id) ? current : [...current, message]
     );
+  }
+
+  async function runAtmosphereAnalysis() {
+    if (!activeSegment) {
+      return;
+    }
+
+    setIsAnalyzingAtmosphere(true);
+    try {
+      const profile = await analyzeAtmosphere(activeSegment.id, activeSegment.text);
+      await saveAtmosphereProfile(profile);
+      setAtmosphereProfile(profile);
+      setBgmRecommendations(recommendBgm(profile, allBgmTracks, { lockedTrackId }));
+    } finally {
+      setIsAnalyzingAtmosphere(false);
+    }
+  }
+
+  function confirmBgmSwitch(trackId: string) {
+    setCurrentTrackId(trackId);
+    setIsBgmPlaying(true);
+  }
+
+  function toggleBgmLock() {
+    setLockedTrackId((current) => (current ? undefined : currentTrackId));
+  }
+
+  async function uploadBgmTrack(input: UploadedBgmInput) {
+    const now = new Date().toISOString();
+    const persistedTrack: BgmTrack = {
+      id: crypto.randomUUID(),
+      title: input.title,
+      source: input.source,
+      audioBlob: input.file,
+      moods: input.moods,
+      scenes: input.scenes,
+      energy: input.energy,
+      darkness: input.darkness,
+      warmth: input.warmth,
+      tempo: input.tempo,
+      licenseNote: "用户本地上传，仅保存浏览器本地元数据。",
+      createdAt: now
+    };
+    const track = hydrateBgmTrack(persistedTrack);
+    await saveBgmTrack(persistedTrack);
+    setUserBgmTracks((current) => [...current, track]);
+    if (atmosphereProfile) {
+      setBgmRecommendations(recommendBgm(atmosphereProfile, [...allBgmTracks, track], { lockedTrackId }));
+    }
+  }
+
+  async function removeBgmTrack(trackId: string) {
+    await deleteBgmTrack(trackId);
+    setUserBgmTracks((current) => current.filter((track) => track.id !== trackId));
+    if (currentTrackId === trackId) {
+      setCurrentTrackId(undefined);
+      setLockedTrackId(undefined);
+      setIsBgmPlaying(false);
+    }
   }
 
   return (
@@ -234,7 +324,7 @@ export function App() {
           ) : (
             <div className="reader-empty">
               <h2>把 TXT 拖进你的阅读空间</h2>
-              <p>阅读内容不会联网；后续书搭子只会看到你已经读过的上下文。</p>
+              <p>阅读内容不会联网；书搭子只会看到你已经读过的上下文。</p>
             </div>
           )}
         </article>
@@ -315,7 +405,21 @@ export function App() {
           <section className="assistant-card">
             <p className="eyebrow">atmosphere</p>
             <h2>BGM 推荐</h2>
-            <p>根据当前章节氛围推荐内置或用户上传音频，播放前需要读者确认。</p>
+            {atmosphereProfile?.chapterEndPrompt && <p>{atmosphereProfile.chapterEndPrompt}</p>}
+            <BgmDock
+              currentTrackId={currentTrackId}
+              isAnalyzing={isAnalyzingAtmosphere}
+              isPlaying={isBgmPlaying}
+              lockedTrackId={lockedTrackId}
+              onAnalyze={() => void runAtmosphereAnalysis()}
+              onConfirmSwitch={confirmBgmSwitch}
+              onDeleteTrack={(trackId) => void removeBgmTrack(trackId)}
+              onToggleLock={toggleBgmLock}
+              onTogglePlay={() => setIsBgmPlaying((value) => !value)}
+              onUploadTrack={(input) => void uploadBgmTrack(input)}
+              recommendations={bgmRecommendations}
+              tracks={allBgmTracks}
+            />
           </section>
         )}
       </aside>
@@ -344,4 +448,15 @@ function readTextFile(file: File): Promise<string> {
     reader.addEventListener("error", () => reject(reader.error ?? new Error("File read failed")));
     reader.readAsText(file);
   });
+}
+
+function hydrateBgmTrack(track: BgmTrack): BgmTrack {
+  if (!track.audioBlob || typeof URL.createObjectURL !== "function") {
+    return track;
+  }
+
+  return {
+    ...track,
+    fileRef: URL.createObjectURL(track.audioBlob)
+  };
 }

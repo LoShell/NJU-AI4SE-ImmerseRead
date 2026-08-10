@@ -13,15 +13,15 @@ const findFirstOverlap = (left: string[], right: string[]): string | undefined =
 const buildReason = (profile: AtmosphereProfile, track: BgmTrack): string => {
   const matchedMood = findFirstOverlap(track.moods, profile.moods);
   if (matchedMood) {
-    return `Matched mood: ${matchedMood}.`;
+    return `匹配情绪：${matchedMood}。`;
   }
 
   const matchedScene = findFirstOverlap(track.scenes, profile.scenes);
   if (matchedScene) {
-    return `Matched scene: ${matchedScene}.`;
+    return `匹配场景：${matchedScene}。`;
   }
 
-  return "Closest atmosphere profile.";
+  return "整体氛围最接近当前片段。";
 };
 
 const scoreTrack = (profile: AtmosphereProfile, track: BgmTrack): number => {

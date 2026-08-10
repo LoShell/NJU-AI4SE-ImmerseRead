@@ -1,5 +1,7 @@
 import type { BgmTrack } from "./bgmTypes";
 
+const PLACEHOLDER_LICENSE = "Metadata placeholder only. No bundled audio file.";
+
 export const builtInTracks: BgmTrack[] = [
   {
     id: "night-suspense",
@@ -11,20 +13,20 @@ export const builtInTracks: BgmTrack[] = [
     darkness: 0.85,
     warmth: 0.2,
     tempo: "slow",
-    licenseNote: "Metadata placeholder only. No bundled audio file.",
+    licenseNote: PLACEHOLDER_LICENSE,
     createdAt: "2026-08-07T00:00:00.000Z"
   },
   {
     id: "battle-rise",
     title: "战意渐燃",
     source: "built-in",
-    moods: ["战斗", "燃", "紧张"],
+    moods: ["战斗", "热血", "紧张"],
     scenes: ["战斗", "追逐", "高潮"],
     energy: 0.9,
     darkness: 0.5,
     warmth: 0.4,
     tempo: "fast",
-    licenseNote: "Metadata placeholder only. No bundled audio file.",
+    licenseNote: PLACEHOLDER_LICENSE,
     createdAt: "2026-08-07T00:00:00.000Z"
   },
   {
@@ -37,7 +39,7 @@ export const builtInTracks: BgmTrack[] = [
     darkness: 0.1,
     warmth: 0.9,
     tempo: "medium",
-    licenseNote: "Metadata placeholder only. No bundled audio file.",
+    licenseNote: PLACEHOLDER_LICENSE,
     createdAt: "2026-08-07T00:00:00.000Z"
   },
   {
@@ -50,7 +52,7 @@ export const builtInTracks: BgmTrack[] = [
     darkness: 0.6,
     warmth: 0.3,
     tempo: "slow",
-    licenseNote: "Metadata placeholder only. No bundled audio file.",
+    licenseNote: PLACEHOLDER_LICENSE,
     createdAt: "2026-08-07T00:00:00.000Z"
   }
 ];

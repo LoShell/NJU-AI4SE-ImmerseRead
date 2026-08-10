@@ -1181,7 +1181,7 @@ git commit -m "feat: add annotations and companion chat"
 - Consumes backend endpoint: `POST /api/llm/atmosphere`.
 - Produces UI: current track, recommendation prompt, upload local audio, metadata editing.
 
-- [ ] **Step 1: Write BgmDock component tests**
+- [x] **Step 1: Write BgmDock component tests**
 
 ```tsx
 import { fireEvent, render, screen } from "@testing-library/react";
@@ -1208,13 +1208,13 @@ describe("BgmDock", () => {
 });
 ```
 
-- [ ] **Step 2: Run BgmDock tests and verify they fail**
+- [x] **Step 2: Run BgmDock tests and verify they fail**
 
 Run: `cd frontend && npm run test -- BgmDock.test.tsx`
 
 Expected: FAIL because `BgmDock` is not implemented.
 
-- [ ] **Step 3: Implement atmosphere client**
+- [x] **Step 3: Implement atmosphere client**
 
 Add function:
 
@@ -1227,7 +1227,7 @@ Behavior:
 - POST to `/api/llm/atmosphere`.
 - On missing key or provider failure, return neutral fallback profile with `moods: ["平静"]`.
 
-- [ ] **Step 4: Implement BgmDock**
+- [x] **Step 4: Implement BgmDock**
 
 UI behavior:
 
@@ -1238,7 +1238,7 @@ UI behavior:
 - Has lock-current-track toggle.
 - Allows local audio upload metadata form for title, moods, scenes, energy, darkness, warmth, tempo.
 
-- [ ] **Step 5: Wire BGM into ReaderView**
+- [x] **Step 5: Wire BGM into ReaderView**
 
 Behavior:
 
@@ -1247,7 +1247,14 @@ Behavior:
 - Store profile and uploaded BGM metadata locally.
 - Do not upload audio blobs to backend.
 
-- [ ] **Step 6: Run BGM tests**
+- [x] **Step 6: Run BGM tests**
+
+Verification:
+
+- `cd frontend && npm run test -- BgmDock.test.tsx client.test.ts libraryRepository.test.ts bgmMatcher.test.ts App.test.tsx AnnotationToolbar.test.tsx CompanionPanel.test.tsx` passed with 25 tests before the local BGM library follow-up.
+- `cd frontend && npm run test -- BgmDock.test.tsx libraryRepository.test.ts App.test.tsx` passed with 17 tests after adding the local BGM library and audio Blob persistence follow-up.
+- `cd frontend && npm run test` passed with 42 tests.
+- `cd frontend && npm run build` passed.
 
 Run: `cd frontend && npm run test -- bgmMatcher.test.ts BgmDock.test.tsx`
 

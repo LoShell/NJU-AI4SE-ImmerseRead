@@ -7,7 +7,7 @@ const baseProfile: AtmosphereProfile = {
   moods: ["悬疑", "孤独"],
   scenes: ["夜晚", "走廊"],
   pace: "slow",
-  intensity: 6,
+  intensity: 0.6,
   energy: 0.4,
   darkness: 0.8,
   warmth: 0.2,
@@ -74,7 +74,7 @@ describe("recommendBgm", () => {
       title: "标签更多但数值偏远"
     });
     expect(recommendations[0].score).toBeCloseTo(7.8);
-    expect(recommendations[0].reason).toContain("悬疑");
+    expect(recommendations[0].reason).toBe("匹配情绪：悬疑。");
   });
 
   it("returns no recommendations when a track is locked", () => {

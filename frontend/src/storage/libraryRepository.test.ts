@@ -1,12 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Annotation, ChatMessage, ReadingProgress, Segment } from "../domain/models";
+import type { Annotation, AtmosphereProfile, BgmTrack, ChatMessage, ReadingProgress, Segment } from "../domain/models";
 import type { ParsedBook } from "../reader/txtParser";
 import {
   getBookWithSegments,
   getReadingProgress,
+  deleteBgmTrack,
   listAnnotations,
   listChatMessages,
+  listBgmTracks,
+  getAtmosphereProfile,
   saveAnnotation,
+  saveAtmosphereProfile,
+  saveBgmTrack,
   saveChatMessage,
   saveParsedBook,
   saveReadingProgress,
@@ -42,21 +47,42 @@ const fakeIdb = vi.hoisted(() => {
     return String(record.id);
   };
 
+  const clone = <T>(value: T): T => {
+    if (value instanceof Blob) {
+      return value;
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((item) => clone(item)) as T;
+    }
+
+    if (value && typeof value === "object") {
+      return Object.fromEntries(
+        Object.entries(value).map(([key, propertyValue]) => [key, clone(propertyValue)])
+      ) as T;
+    }
+
+    return value;
+  };
+
   const put = async (storeName: string, value: unknown, key?: IDBValidKey) => {
-    stores[storeName].set(keyFor(storeName, value, key), structuredClone(value));
+    stores[storeName].set(keyFor(storeName, value, key), clone(value));
   };
 
   const get = async (storeName: string, key: IDBValidKey) => {
     const value = stores[storeName].get(String(key));
-    return value === undefined ? undefined : structuredClone(value);
+    return value === undefined ? undefined : clone(value);
   };
 
   const getAllFromIndex = async (storeName: string, indexName: string, key: IDBValidKey) => {
     const property = indexName === "by-source" ? "source" : indexName;
     return Array.from(stores[storeName].values())
       .filter((value) => (value as Record<string, unknown>)[property] === key)
-      .map((value) => structuredClone(value));
+      .map((value) => clone(value));
   };
+
+  const getAll = async (storeName: string) =>
+    Array.from(stores[storeName].values()).map((value) => clone(value));
 
   const deleteRecord = async (storeName: string, key: IDBValidKey) => {
     stores[storeName].delete(String(key));
@@ -66,6 +92,7 @@ const fakeIdb = vi.hoisted(() => {
     objectStore: (storeName: string) => ({
       put: (value: unknown, key?: IDBValidKey) => put(storeName, value, key),
       get: (key: IDBValidKey) => get(storeName, key),
+      getAll: () => getAll(storeName),
       getAllFromIndex: (indexName: string, key: IDBValidKey) => getAllFromIndex(storeName, indexName, key),
       delete: (key: IDBValidKey) => deleteRecord(storeName, key)
     }),
@@ -77,6 +104,7 @@ const fakeIdb = vi.hoisted(() => {
     openDB: vi.fn(async () => ({
       put,
       get,
+      getAll,
       getAllFromIndex,
       delete: deleteRecord,
       transaction
@@ -184,6 +212,65 @@ describe("libraryRepository", () => {
 
     await expect(listChatMessages("book-1")).resolves.toEqual([first, second]);
   });
+
+  it("saves and restores an atmosphere profile by segment id", async () => {
+    const profile: AtmosphereProfile = {
+      segmentId: "segment-1",
+      moods: ["悬疑"],
+      scenes: ["雨夜"],
+      pace: "slow",
+      intensity: 0.7,
+      energy: 0.4,
+      darkness: 0.8,
+      warmth: 0.2,
+      tags: ["雨"],
+      modelName: "test-model",
+      createdAt: "2026-08-07T03:00:00.000Z"
+    };
+
+    await saveAtmosphereProfile(profile);
+
+    await expect(getAtmosphereProfile("segment-1")).resolves.toEqual(profile);
+    await expect(getAtmosphereProfile("missing-segment")).resolves.toBeUndefined();
+  });
+
+  it("saves and lists local BGM track metadata ordered by creation time", async () => {
+    const second: BgmTrack = createBgmTrack({
+      id: "track-2",
+      title: "second",
+      createdAt: "2026-08-07T02:00:00.000Z"
+    });
+    const first: BgmTrack = createBgmTrack({
+      id: "track-1",
+      title: "first",
+      createdAt: "2026-08-07T01:00:00.000Z"
+    });
+
+    await saveBgmTrack(second);
+    await saveBgmTrack(first);
+
+    await expect(listBgmTracks()).resolves.toEqual([first, second]);
+  });
+
+  it("persists uploaded BGM audio blobs locally and deletes user tracks", async () => {
+    const audioBlob = new Blob(["fake audio"], { type: "audio/mpeg" });
+    const track = createBgmTrack({
+      id: "track-audio",
+      title: "rain",
+      audioBlob,
+      fileRef: undefined
+    });
+
+    await saveBgmTrack(track);
+
+    const savedTracks = await listBgmTracks();
+    expect(savedTracks[0]).toEqual(expect.objectContaining({ id: "track-audio", title: "rain" }));
+    expect(savedTracks[0].audioBlob).toBeInstanceOf(Blob);
+
+    await deleteBgmTrack("track-audio");
+
+    await expect(listBgmTracks()).resolves.toEqual([]);
+  });
 });
 
 function createParsedBook(input: { bookId: string; segments: Segment[] }): ParsedBook {
@@ -248,6 +335,22 @@ function createChatMessage(overrides: Partial<ChatMessage>): ChatMessage {
     contextStartChar: 0,
     contextEndChar: 10,
     spoilerPolicy: "strict",
+    createdAt: "2026-08-07T00:00:00.000Z",
+    ...overrides
+  };
+}
+
+function createBgmTrack(overrides: Partial<BgmTrack>): BgmTrack {
+  return {
+    id: "track-1",
+    title: "track",
+    source: "user-uploaded",
+    moods: ["悬疑"],
+    scenes: ["夜晚"],
+    energy: 0.4,
+    darkness: 0.8,
+    warmth: 0.2,
+    tempo: "slow",
     createdAt: "2026-08-07T00:00:00.000Z",
     ...overrides
   };

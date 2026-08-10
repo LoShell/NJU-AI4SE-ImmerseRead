@@ -1,4 +1,12 @@
-import type { Annotation, Book, ChatMessage, ReadingProgress, Segment } from "../domain/models";
+import type {
+  Annotation,
+  AtmosphereProfile,
+  BgmTrack,
+  Book,
+  ChatMessage,
+  ReadingProgress,
+  Segment
+} from "../domain/models";
 import type { ParsedBook } from "../reader/txtParser";
 import { getDb } from "./db";
 
@@ -73,4 +81,30 @@ export async function listChatMessages(bookId: string): Promise<ChatMessage[]> {
   const db = await getDb();
   const messages = await db.getAllFromIndex("chatMessages", "bookId", bookId);
   return [...messages].sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+}
+
+export async function saveAtmosphereProfile(profile: AtmosphereProfile): Promise<void> {
+  const db = await getDb();
+  await db.put("atmosphereProfiles", profile);
+}
+
+export async function getAtmosphereProfile(segmentId: string): Promise<AtmosphereProfile | undefined> {
+  const db = await getDb();
+  return db.get("atmosphereProfiles", segmentId);
+}
+
+export async function saveBgmTrack(track: BgmTrack): Promise<void> {
+  const db = await getDb();
+  await db.put("bgmTracks", track);
+}
+
+export async function deleteBgmTrack(trackId: string): Promise<void> {
+  const db = await getDb();
+  await db.delete("bgmTracks", trackId);
+}
+
+export async function listBgmTracks(): Promise<BgmTrack[]> {
+  const db = await getDb();
+  const tracks = await db.getAll("bgmTracks");
+  return [...tracks].sort((left, right) => left.createdAt.localeCompare(right.createdAt));
 }

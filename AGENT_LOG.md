@@ -1,5 +1,32 @@
 # AGENT_LOG
 
+## 2026-08-10
+
+### Task 9: Atmosphere-Based BGM Experience
+
+- Executor: Codex main conversation, no subagent, per user request to keep frontend context continuous.
+- Key decisions:
+  - Built-in tracks remain metadata placeholders only; no copyrighted audio is bundled.
+  - User-uploaded audio stays browser-local. The backend only receives atmosphere analysis requests and never receives audio blobs.
+  - BGM switching is reader-confirmed. The app does not auto-switch tracks or run an agent loop.
+- TDD record:
+  - Added failing tests for `BgmDock`, `analyzeAtmosphere`, local atmosphere/BGM repository persistence, and Chinese recommendation reasons.
+  - Red run failed for the expected missing exports/component and untranslated recommendation reason.
+  - Implemented the minimum UI, client, repository, and wiring needed to pass.
+- Implementation:
+  - Added `BgmDock` with play/pause, native local audio controls, lock current track, recommendation confirmation, and local audio metadata upload form.
+  - Added `analyzeAtmosphere(segmentId, text)` frontend client with neutral fallback when the backend/key is unavailable.
+  - Added `saveAtmosphereProfile`, `getAtmosphereProfile`, `saveBgmTrack`, and `listBgmTracks`.
+  - Wired the right-side BGM tab in `App.tsx` to current segment analysis and `recommendBgm`.
+  - Restored readable Chinese UI text touched by the BGM/side-panel integration.
+- Verification:
+  - `cd frontend && npm run test -- BgmDock.test.tsx client.test.ts libraryRepository.test.ts bgmMatcher.test.ts App.test.tsx AnnotationToolbar.test.tsx CompanionPanel.test.tsx`: 25 tests passed.
+  - Local BGM library follow-up added IndexedDB audio Blob persistence, uploaded-track listing, selecting, and deletion.
+  - `cd frontend && npm run test -- BgmDock.test.tsx libraryRepository.test.ts App.test.tsx`: 17 tests passed.
+  - `cd frontend && npm run test`: 42 tests passed.
+  - `cd frontend && npm run build`: passed.
+- Commit: pending user review.
+
 ## 2026-08-07
 
 ### Task: Worktree And Verification Setup

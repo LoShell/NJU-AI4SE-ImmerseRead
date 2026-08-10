@@ -85,6 +85,7 @@ export interface BgmTrack {
   title: string;
   source: BgmSource;
   fileRef?: string;
+  audioBlob?: Blob;
   moods: string[];
   scenes: string[];
   energy: number;

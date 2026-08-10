@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import type { ChatMessage, ReadingProgress, Segment } from "../domain/models";
 import { sendCompanionChat } from "../llm/client";
 import { buildAllowedContext } from "../spoiler/spoilerGuard";
@@ -28,7 +28,7 @@ export function CompanionPanel({
   const [localMessages, setLocalMessages] = useState(messages);
   const [isSending, setIsSending] = useState(false);
 
-  async function submitMessage(event: React.FormEvent<HTMLFormElement>) {
+  async function submitMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const question = draft.trim();
 

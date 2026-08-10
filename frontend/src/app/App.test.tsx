@@ -3,9 +3,13 @@ import { describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 
 vi.mock("../storage/libraryRepository", () => ({
+  getAtmosphereProfile: vi.fn(async () => undefined),
   listAnnotations: vi.fn(async () => []),
+  listBgmTracks: vi.fn(async () => []),
   listChatMessages: vi.fn(async () => []),
   saveAnnotation: vi.fn(async () => undefined),
+  saveAtmosphereProfile: vi.fn(async () => undefined),
+  saveBgmTrack: vi.fn(async () => undefined),
   saveChatMessage: vi.fn(async () => undefined),
   saveParsedBook: vi.fn(async () => undefined),
   saveReadingProgress: vi.fn(async () => undefined)
@@ -59,6 +63,16 @@ describe("App", () => {
     expect(within(article).queryByLabelText("批注工具栏")).not.toBeInTheDocument();
 
     getSelection.mockRestore();
+  });
+
+  it("keeps the BGM recommendation controls in the right panel", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "BGM" }));
+
+    const sidePanel = screen.getByRole("complementary", { name: "阅读陪伴面板" });
+    expect(within(sidePanel).getByRole("heading", { name: "BGM 推荐" })).toBeInTheDocument();
+    expect(within(sidePanel).getByRole("button", { name: "分析当前氛围" })).toBeInTheDocument();
   });
 });
 
