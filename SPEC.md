@@ -379,11 +379,11 @@ ImmerseRead 是一个面向小说和网文读者的本地优先沉浸式 TXT 阅
 
 凭据生命周期：
 
-- 录入：优先使用后端提供的凭据管理命令以隐藏输入方式录入 key，并写入操作系统凭据管理器；Windows 目标机使用 Windows Credential Manager。容器或 CI 环境可复制 `.env.example` 为 `.env`，填写 `LLM_API_KEY`。
-- 查看状态：后端健康检查或凭据管理命令只返回“已配置 / 未配置”，不得回显明文 key。
-- 更新：重新运行凭据录入命令覆盖旧 key；`.env` 模式下修改 `.env` 后重启后端。
-- 清除：运行凭据清除命令删除系统凭据；`.env` 模式下删除 key 后重启后端。清除后 LLM 功能进入禁用状态。
-- 风险说明：系统凭据管理器比 `.env` 更适合个人本机运行；`.env` 是明文 fallback，仅用于开发、Docker Compose 和课程冷启动验证。
+- 录入：当前 MVP 通过后端进程环境变量或本机 `.env` 注入 key，推荐使用 `LLM_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL` 和 `LLM_PROVIDER`。后续可扩展为操作系统凭据管理器或平台 Secret。
+- 查看状态：后端健康检查或 LLM 接口只返回“已配置 / 未配置”类状态，不得回显明文 key。
+- 更新：修改环境变量或 `.env` 后重启后端。
+- 清除：删除环境变量或 `.env` 中的 key 后重启后端。清除后 LLM 功能进入禁用状态。
+- 风险说明：`.env` 是明文 fallback，仅用于开发、课程冷启动验证或本机运行；正式线上部署应使用平台 Secret / 环境变量注入。
 
 ### 4.3 可用性
 
@@ -478,7 +478,7 @@ TXT 上传：
 - OpenAI API 或 OpenAI-compatible 接口。
 - 浏览器 File API，用于 TXT 和音频导入。
 - 浏览器 IndexedDB，用于本地持久化。
-- Docker，用于课程分发与冷启动验证。
+- Docker 可作为后续分发验证方式；当前提交优先保证本地前后端启动和 CI 单元测试。
 
 ## 6. 数据模型
 
@@ -603,8 +603,10 @@ TXT 上传：
 
 第一版凭据来源按优先级读取：
 
-1. 操作系统凭据管理器中的 `immerseread.openai.api-key`。
-2. 后端环境变量或 `.env` 中的 `LLM_API_KEY`。兼容 `OPENAI_API_KEY` 和 `DEEPSEEK_API_KEY`。
+1. 后端环境变量或 `.env` 中的 `LLM_API_KEY`。
+2. 兼容旧变量 `OPENAI_API_KEY` 和 `DEEPSEEK_API_KEY`。
+
+操作系统凭据管理器和平台 Secret 属于后续增强方向，不作为当前 MVP 的已实现能力。
 
 前端永远不保存、不接收供应商凭据。后端不得把 key 写入日志、错误响应、聊天记录或任何数据库。
 
@@ -621,10 +623,10 @@ LLM_MODEL=deepseek-v4-flash
 
 ### 7.2 凭据录入、查看状态、更新与清除
 
-- 录入：运行后端凭据管理命令，例如 `java -jar backend.jar credentials set`，通过隐藏输入录入 key；开发和 Docker Compose 可使用 `.env`。
-- 查看状态：运行 `java -jar backend.jar credentials status` 或访问健康检查，只显示 configured/unconfigured。
-- 更新：重新运行 `credentials set` 覆盖旧 key；`.env` 模式下修改 `.env` 后重启服务。
-- 清除：运行 `java -jar backend.jar credentials clear` 删除系统凭据；`.env` 模式下删除 `.env` 中的 key 后重启服务。
+- 录入：在启动后端前设置 `LLM_API_KEY` 等环境变量；本机开发可复制 `.env.example` 为 `.env` 并填写 key。
+- 查看状态：访问健康检查或 LLM 功能入口时，只显示 configured/unconfigured 类状态。
+- 更新：修改环境变量或 `.env` 后重启服务。
+- 清除：删除环境变量或 `.env` 中的 key 后重启服务。
 - 降级：没有 key 时，阅读、批注、本地 BGM 仍可用，LLM 功能显示“尚未配置”。
 
 ### 7.3 分发形态
@@ -632,12 +634,13 @@ LLM_MODEL=deepseek-v4-flash
 目标平台：
 
 - Windows、macOS、Linux 上的本地浏览器。
-- 支持 Docker 的课程验收环境。
+- 支持本地 Node.js + Spring Boot 的课程验收环境；Docker 分发待作者在 Ubuntu 虚拟机中验证后补齐。
 
-第一版分发命令：
+当前可验收启动方式：
 
 ```text
-docker compose up --build
+cd backend && mvn spring-boot:run
+cd frontend && npm run dev
 ```
 
 预期服务：
@@ -647,6 +650,7 @@ docker compose up --build
 
 后续可选方向：
 
+- 在 Ubuntu 虚拟机中补齐并验证 `docker compose up --build`。
 - 构建为单个 Docker 镜像，由 Spring Boot 托管前端构建产物。
 - 将容器镜像推送到公开 registry，并在 README 写出 `docker pull` 与 `docker run --env-file .env` 示例。
 - 部署到支持免费额度的平台，提供可访问的 WebUI URL；生产部署仍不保存用户小说正文。
@@ -693,8 +697,8 @@ docker compose up --build
 
 ### 8.8 部署
 
-- 第一版使用 Docker Compose。
-- 理由：便于课程冷启动验证，也能清楚分离前端和后端服务。
+- 当前提交使用本地前后端分离启动与 GitLab CI 单元验证。
+- Docker Compose 是后续分发目标，需要在作者的 Ubuntu 虚拟机 Docker 环境中验证后再声明为正式交付方式。
 
 ## 9. 验收标准
 
@@ -747,8 +751,8 @@ docker compose up --build
 
 ### 9.8 分发与测试
 
-- `docker compose up --build` 可以启动前端和后端。
-- 有一条命令可以运行前后端测试。
+- 本地命令可以启动前端和后端。
+- CI 中的 `unit-test` job 可以运行前端测试、前端构建和后端测试。
 - CI 覆盖解析器、防剧透模块、BGM 推荐器、LLM adapter 和后端请求校验。
 
 ## 10. 明确不做的内容

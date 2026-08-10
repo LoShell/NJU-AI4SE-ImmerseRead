@@ -6,7 +6,7 @@
 
 **Architecture:** 前端使用 React + TypeScript + Vite，负责 TXT 解析、IndexedDB 本地存储、阅读 UI、批注、BGM 播放与防剧透上下文构造。后端使用 Spring Boot，仅作为 LLM 代理、凭据隔离、请求校验、结构化输出规范化和脱敏日志层，不持久化小说正文、批注、聊天记录或音频。
 
-**Tech Stack:** React, TypeScript, Vite, Vitest, React Testing Library, Playwright, IndexedDB, Java 17, Spring Boot 4.1.0, JUnit 5, Docker Compose, OpenAI-compatible Chat Completions API.
+**Tech Stack:** React, TypeScript, Vite, Vitest, React Testing Library, Playwright, IndexedDB, Java 17, Spring Boot 4.1.0, JUnit 5, GitLab CI, OpenAI-compatible Chat Completions API. Docker Compose is a planned distribution target after verification in the author's Ubuntu VM.
 
 ## Implementation Progress
 
@@ -45,6 +45,10 @@
   - Implementation: pending commit by Codex main conversation, no subagent.
   - Scope: playable BGM previous/next and ended-to-next behavior, scroll-derived chapter/book progress, night reading mode, and documentation updates.
   - Verification: `cd frontend && npm run test -- App.test.tsx BgmDock.test.tsx` passed locally on 2026-08-11.
+- [x] Task 11: Submission readiness docs and GitLab CI baseline
+  - Implementation: pending commit by Codex main conversation, no subagent.
+  - Scope: root `.gitlab-ci.yml` with required `unit-test` job, README run/key/CI notes, and SPEC alignment for current MVP distribution and credential behavior.
+  - Verification: `cd frontend && npm run test`, `cd frontend && npm run build`, and `cd backend && .\mvnw.cmd test` passed locally on 2026-08-11. Docker and remote GitLab CI must be verified by the user in the target environment.
 
 ## Global Constraints
 
@@ -1448,6 +1452,57 @@ Run: `gitlab-ci-local unit-test` if available, otherwise validate `.gitlab-ci.ym
 ```bash
 git add docker-compose.yml frontend/Dockerfile backend/Dockerfile frontend/e2e .gitlab-ci.yml SPEC.md PLAN.md SPEC_PROCESS.md AGENT_LOG.md docs/COLD_START_PROMPT.md README.md
 git commit -m "chore: add distribution ci and process docs"
+```
+
+---
+
+### Task 11: Submission Readiness Docs And GitLab CI Baseline
+
+**Files:**
+
+- Create: `.gitlab-ci.yml`
+- Modify: `README.md`
+- Modify: `SPEC.md`
+- Modify: `PLAN.md`
+- Modify: `AGENT_LOG.md`
+
+**Interfaces:**
+
+- Produces GitLab CI job: `unit-test`.
+- Documents local startup commands for `frontend` and `backend`.
+- Documents `LLM_*` key configuration and plaintext `.env` risk.
+
+- [x] **Step 1: Add GitLab CI baseline**
+
+Add root `.gitlab-ci.yml` with a required `unit-test` job that installs frontend dependencies, runs frontend tests, builds the frontend, and runs backend tests.
+
+- [x] **Step 2: Update README**
+
+Document product scope, local startup, LLM key setup, verification commands, BGM demo audio placement, CI status, Docker deferral, online deployment deferral, and known MVP limits.
+
+- [x] **Step 3: Align SPEC With Current Implementation**
+
+Downgrade unimplemented claims about OS credential manager and Docker Compose from “first version behavior” to “future / VM verification” so the submitted documentation reflects the actual MVP.
+
+- [x] **Step 4: Run Verification**
+
+Run:
+
+```powershell
+cd frontend
+npm run test
+npm run build
+cd ../backend
+.\mvnw.cmd test
+```
+
+Docker verification remains deferred to the author's Ubuntu VM.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add .gitlab-ci.yml README.md SPEC.md PLAN.md AGENT_LOG.md
+git commit -m "chore: add ci and submission docs"
 ```
 
 ---

@@ -1,15 +1,32 @@
 # NJU-AI4SE-ImmerseRead
 
-ImmerseRead 是一个本地优先的沉浸式 TXT 小说阅读器。小说正文、阅读进度、批注和聊天记录默认保存在浏览器本地；LLM 功能只通过 Spring Boot 后端代理请求，前端不会保存或接触 API key。
+ImmerseRead 是一个本地优先的沉浸式 TXT 小说阅读器，面向小说和网文读者。它把 TXT 解析、三栏阅读 UI、本地批注、BGM 曲库和不剧透的 LLM 书搭子整合到同一个阅读流程里。
+
+小说正文、阅读进度、批注、聊天记录和用户上传的 BGM 默认保存在浏览器本地。LLM 调用只通过 Spring Boot 后端代理完成，前端不保存、接收或展示供应商 API key。
 
 ## 当前功能
 
-- 上传本地 `.txt` 小说并解析为章节或阅读片段。
-- 本地阅读、章节切换、阅读主题、字体大小和行距调整。
-- 本地批注与“带着批注问书搭子”。
-- 防剧透上下文构造：只把已读范围发送给后端。
-- 后端 LLM 代理：支持 OpenAI Responses API 和 DeepSeek Chat Completions。
-- 缺少 API key 时，LLM 功能禁用，但本地阅读功能仍可使用。
+- 上传本地 `.txt` 小说，自动解析常见章节标题；章节识别不可靠时回退为固定长度阅读片段。
+- 三栏沉浸阅读界面：左侧本地书籍/章节，中间正文独立滚动，右侧书搭子、批注和 BGM。
+- 真实阅读进度：本章进度来自正文滚动位置，全文进度结合当前章节位置计算。
+- 阅读设置：字号、行距、纸页/暖棕主题切换，以及独立夜视模式。
+- 批注：选中正文后在右侧批注区保存批注，也可以带着选中文本询问书搭子。
+- 防剧透书搭子：前端构造只包含已读范围的上下文，后端负责 LLM 代理和响应规范化。
+- BGM：支持本地音频上传、元数据标签、氛围推荐、播放/暂停、上一首/下一首、结束后顺序播放。
+- 无 LLM key 时，本地阅读、批注和 BGM 功能仍可使用。
+
+## 目录结构
+
+```text
+NJU-AI4SE-ImmerseRead/
+  frontend/        React + TypeScript + Vite 前端
+  backend/         Spring Boot LLM 代理后端
+  SPEC.md          产品与系统规格
+  PLAN.md          实现计划与任务记录
+  SPEC_PROCESS.md  Spec/Plan 生成与冷启动验证过程
+  AGENT_LOG.md     AI 协作与人工干预日志
+  .gitlab-ci.yml   CI 配置，包含 unit-test job
+```
 
 ## 本地启动
 
@@ -21,7 +38,7 @@ npm install
 npm run dev
 ```
 
-Vite 已配置开发代理：前端请求 `/api/**` 会转发到 `http://localhost:8080`。
+默认 Vite 地址通常是 `http://localhost:5173`。开发代理已配置：前端请求 `/api/**` 会转发到 `http://localhost:8080`。
 
 ### 2. 后端
 
@@ -30,19 +47,21 @@ cd backend
 mvn spring-boot:run
 ```
 
-## LLM 配置
+后端默认监听 `http://localhost:8080`。
 
-不要把真实 key 写进仓库。老师或测试者应使用自己的 key，通过环境变量注入。
+## LLM Key 配置
+
+不要把真实 key 写进仓库、提交历史、截图或日志。老师或测试者应使用自己的 key，在目标机器上通过环境变量或 `.env` 注入。
+
+当前 MVP 使用环境变量 / `.env` 作为凭据来源。`.env` 是明文 fallback，适合课程冷启动验证和本地开发；它不如操作系统凭据管理器安全，且可能被有本机权限的用户读取。
 
 ### DeepSeek 示例
-
-DeepSeek 使用 OpenAI-compatible Chat Completions 接口。根据 DeepSeek 官方文档，`base_url` 可使用 `https://api.deepseek.com`，当前推荐模型包括 `deepseek-v4-flash` 和 `deepseek-v4-pro`。
 
 ```powershell
 $env:LLM_PROVIDER="deepseek"
 $env:LLM_API_KEY="你的 DeepSeek key"
 $env:LLM_BASE_URL="https://api.deepseek.com"
-$env:LLM_MODEL="deepseek-v4-flash"
+$env:LLM_MODEL="deepseek-chat"
 
 cd backend
 mvn spring-boot:run
@@ -62,14 +81,14 @@ mvn spring-boot:run
 
 ### 兼容变量
 
-后端优先读取通用变量：
+后端优先读取：
 
 - `LLM_PROVIDER`
 - `LLM_API_KEY`
 - `LLM_BASE_URL`
 - `LLM_MODEL`
 
-也保留旧变量兼容：
+也保留兼容：
 
 - `OPENAI_API_KEY`
 - `OPENAI_BASE_URL`
@@ -78,27 +97,66 @@ mvn spring-boot:run
 
 ## 验证
 
+前端：
+
 ```powershell
 cd frontend
 npm run test
 npm run build
+```
 
-cd ../backend
+后端：
+
+```powershell
+cd backend
 mvn test
 ```
 
-## BGM 与阅读体验说明
+CI 会在 `unit-test` job 中执行前端测试、前端构建和后端测试。
 
-- 系统曲库元数据位于 `frontend/src/bgm/builtInTracks.ts`。如果要加入可播放的系统示例音频，可把音频文件放到 `frontend/public/bgm/`，再把对应曲目的 `fileRef` 设为 `/bgm/文件名.mp3`。不要提交没有授权的大体积版权音乐。
-- 用户上传的 BGM 音频只保存在浏览器本地 IndexedDB，不会上传到后端。
-- BGM 播放器会按曲库列表顺序在可播放曲目之间切换；没有音频引用的内置占位曲目会被跳过。
-- 中间正文区域会独立滚动，并根据滚动位置更新本章进度和全文进度。
-- 阅读设置里提供纸页/暖棕主题切换，并额外提供夜视模式。
+## BGM 曲库
+
+系统曲库元数据位于：
+
+```text
+frontend/src/bgm/builtInTracks.ts
+```
+
+如果要加入可播放的系统 demo 音频，可以把音频文件放到：
+
+```text
+frontend/public/bgm/
+```
+
+然后在对应曲目上设置：
+
+```ts
+fileRef: "/bgm/example.mp3"
+```
+
+不要提交没有授权的大体积版权音乐。用户上传的 BGM 音频只保存在浏览器本地 IndexedDB，不会上传到后端。
+
+## CI/CD 与分发状态
+
+当前仓库提供 `.gitlab-ci.yml`，其中包含作业要求的 `unit-test` job。
+
+Docker 分发仍需在作者的 Ubuntu 虚拟机环境中验证。当前没有声称已经通过 `docker compose up --build` 启动完整系统；在 Docker 验证完成前，推荐使用“本地前端 + 本地后端”的方式验收。
+
+线上部署暂未启用。若后续提供公网 WebUI，建议将前端部署为静态站，将 Spring Boot 后端部署到支持环境变量密钥配置的平台，并由部署环境注入 `LLM_*`，不要把 key 打包进前端或镜像。
 
 ## 安全边界
 
 - 仓库不得提交真实 `.env` 或真实 API key。
-- 前端不接触供应商凭据。
-- 后端不持久化小说正文。
+- 前端不接触 LLM 供应商凭据。
+- 后端不持久化小说正文、用户上传音频或真实 key。
 - 日志不得输出 API key 或小说正文。
-- 没有 key 时应显示 LLM 未配置状态，而不是影响本地阅读、批注和 BGM 逻辑。
+- 小说正文、批注、阅读进度、聊天记录和用户上传音频默认只保存在当前浏览器本地。
+- 清除浏览器站点数据、换浏览器、换设备或换部署域名，可能导致本地书库和批注不可恢复。
+
+## 已知限制
+
+- 第一版只支持 TXT，不支持 EPUB/PDF。
+- 本地书库目前偏 MVP：数据依赖浏览器 IndexedDB，不提供账号同步。
+- BGM 推荐依赖用户上传或 demo 音频；内置无音频引用的曲目只作为标签占位。
+- 书搭子不是 agent，不进行自主多轮规划或工具调用。
+- 公网部署、账号登录、多设备书籍管理和云端同步属于后续扩展方向。

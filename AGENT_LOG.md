@@ -2,6 +2,29 @@
 
 ## 2026-08-11
 
+### Task 11: Submission Readiness Docs And GitLab CI Baseline
+
+- Executor: Codex main conversation, no subagent.
+- User/environment constraint:
+  - Docker is installed in the user's Ubuntu VM rather than this Windows worktree environment.
+  - Do not claim Docker distribution is verified from this session.
+- Key decisions:
+  - Add a root GitLab CI baseline now because it can be represented in the repository and checked by the remote runner.
+  - Keep Docker Compose and public deployment as explicit follow-up work until the user verifies the VM/container path.
+  - Keep the current credential implementation honest: backend environment variables / `.env` fallback are implemented; OS credential manager and platform Secret storage are future hardening paths.
+  - Do not create `REFLECTION.md` because the user will write the personal reflection manually.
+- Implementation:
+  - Added `.gitlab-ci.yml` with the required `unit-test` job.
+  - Updated `README.md` with local startup, LLM key setup, test commands, BGM demo audio placement, CI/CD status, security boundary, and known limits.
+  - Updated `SPEC.md` so credential and distribution sections match the current MVP rather than over-claiming Docker or OS credential-manager support.
+  - Updated `PLAN.md` with this submission-readiness task.
+- Verification:
+  - `cd frontend && npm run test`: 10 test files passed, 50 tests passed.
+  - `cd frontend && npm run build`: passed.
+  - `cd backend && .\mvnw.cmd test`: 14 tests passed, build success.
+  - Docker verification remains deferred to the user's Ubuntu VM.
+- Commit: pending user review.
+
 ### Task 10: Reader Polish For BGM Queue, Real Progress, And Night Mode
 
 - Executor: Codex main conversation, no subagent, per user request to keep frontend context continuous.
