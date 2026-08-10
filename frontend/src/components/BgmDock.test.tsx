@@ -46,6 +46,15 @@ const recommendations: BgmRecommendation[] = [
 ];
 
 describe("BgmDock", () => {
+  it("renders compact collapsible BGM sections", () => {
+    renderDock({ tracks: uploadedTracks });
+
+    expect(screen.getByText("当前播放")).toBeInTheDocument();
+    expect(screen.getByText("氛围推荐")).toBeInTheDocument();
+    expect(screen.getByText("我的曲库")).toBeInTheDocument();
+    expect(screen.getByText("添加本地音频")).toBeInTheDocument();
+  });
+
   it("requires confirmation before switching to a recommended track", () => {
     const onConfirmSwitch = vi.fn();
 
