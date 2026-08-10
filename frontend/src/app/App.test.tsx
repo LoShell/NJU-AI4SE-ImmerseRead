@@ -17,23 +17,34 @@ vi.mock("../storage/libraryRepository", () => ({
 }));
 
 describe("App", () => {
-  it("renders a compact reader workspace with local-first affordances", () => {
+  it("renders an empty reference-style workspace before a TXT is uploaded", () => {
     render(<App />);
 
     expect(screen.getByRole("heading", { name: "ImmerseRead" })).toBeInTheDocument();
+    expect(screen.getByText("本地书库")).toBeInTheDocument();
     expect(screen.getByLabelText("上传 TXT 小说")).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "章节列表" })).toBeInTheDocument();
-    expect(screen.getByRole("complementary", { name: "阅读陪伴面板" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /书搭子/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /BGM/ })).toBeInTheDocument();
+    expect(screen.getByAltText("默认书籍封面")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "暂无书籍" })).toBeInTheDocument();
+    expect(screen.getByText("匿名作者")).toBeInTheDocument();
+    expect(screen.getByText("文件大小未知")).toBeInTheDocument();
+    expect(screen.queryByText("雾港来信")).not.toBeInTheDocument();
+    expect(screen.queryByText("第三章 · 雨夜来客")).not.toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "本地保存提醒" })).not.toBeInTheDocument();
+    expect(screen.getByText("导入 TXT 后开始阅读。")).toBeInTheDocument();
   });
 
-  it("shows a browser storage notice for refresh and local data expectations", () => {
+  it("keeps the BGM player docked in the right panel outside the active tab", () => {
     render(<App />);
 
-    expect(screen.getByRole("status", { name: "本地保存提醒" })).toHaveTextContent(
-      "书籍、批注和 BGM 保存在当前浏览器"
-    );
+    const sidePanel = screen.getByRole("complementary", { name: "阅读陪伴面板" });
+    expect(within(sidePanel).getByRole("button", { name: /书搭子/ })).toHaveAttribute("aria-pressed", "true");
+    expect(within(sidePanel).getByLabelText("BGM 常驻播放器")).toBeInTheDocument();
+    expect(within(sidePanel).getByAltText("默认 BGM 封面")).toBeInTheDocument();
+
+    fireEvent.click(within(sidePanel).getByRole("button", { name: "批注" }));
+
+    expect(within(sidePanel).getByLabelText("BGM 常驻播放器")).toBeInTheDocument();
+    expect(within(sidePanel).getByAltText("默认 BGM 封面")).toBeInTheDocument();
   });
 
   it("imports a local TXT file and lets the reader switch chapters", async () => {
@@ -50,6 +61,8 @@ describe("App", () => {
       expect(screen.getByRole("heading", { name: "Chapter 2 Rain" })).toBeInTheDocument();
     });
     expect(screen.getByText("The rain became urgent.")).toBeInTheDocument();
+    expect(screen.getByText("阅读进度")).toBeInTheDocument();
+    expect(screen.getByText("100%")).toBeInTheDocument();
   });
 
   it("shows the active annotation editor at the top of the right annotation panel", async () => {
@@ -64,7 +77,8 @@ describe("App", () => {
     fireEvent.mouseUp(screen.getByText("The rain became urgent."));
 
     const sidePanel = screen.getByRole("complementary", { name: "阅读陪伴面板" });
-    const article = screen.getByRole("article");
+    const readingArea = screen.getByRole("region", { name: "阅读区" });
+    const article = within(readingArea).getByRole("article");
 
     expect(within(sidePanel).getByRole("button", { name: "批注" })).toHaveAttribute("aria-pressed", "true");
     expect(within(sidePanel).getByLabelText("批注工具栏")).toBeInTheDocument();
@@ -74,16 +88,17 @@ describe("App", () => {
     getSelection.mockRestore();
   });
 
-  it("keeps the BGM recommendation controls in collapsible right-panel sections", () => {
+  it("uses the BGM tab for the song library instead of duplicating the player", () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole("button", { name: /BGM/ }));
 
     const sidePanel = screen.getByRole("complementary", { name: "阅读陪伴面板" });
-    expect(within(sidePanel).getByRole("heading", { name: "BGM 推荐" })).toBeInTheDocument();
-    expect(within(sidePanel).getByRole("button", { name: /分析当前氛围/ })).toBeInTheDocument();
-    expect(within(sidePanel).getByText("我的曲库")).toBeInTheDocument();
-    expect(within(sidePanel).getByText("添加本地音频")).toBeInTheDocument();
+    const libraryPanel = within(sidePanel).getByLabelText("BGM 曲库面板");
+    expect(within(libraryPanel).getByText("我的曲库")).toBeInTheDocument();
+    expect(within(libraryPanel).getByText("添加本地音频")).toBeInTheDocument();
+    expect(within(libraryPanel).queryByAltText("默认 BGM 封面")).not.toBeInTheDocument();
+    expect(within(libraryPanel).queryByRole("button", { name: /分析当前氛围/ })).not.toBeInTheDocument();
   });
 });
 

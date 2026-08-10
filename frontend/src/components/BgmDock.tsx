@@ -1,5 +1,6 @@
 import { useMemo, useState, type FormEvent } from "react";
 import type { BgmRecommendation, BgmSource, BgmTrack, Tempo } from "../bgm/bgmTypes";
+import defaultBgmCover from "../assets/default-bgm-cover.png";
 import { Icon } from "./Icon";
 
 export interface UploadedBgmInput {
@@ -27,6 +28,10 @@ export interface BgmDockProps {
   onTogglePlay: () => void;
   onToggleLock: () => void;
   onUploadTrack: (track: UploadedBgmInput) => void;
+  showPlayer?: boolean;
+  showRecommendations?: boolean;
+  showLibrary?: boolean;
+  showUpload?: boolean;
 }
 
 const splitTags = (value: string): string[] =>
@@ -52,7 +57,11 @@ export function BgmDock({
   onDeleteTrack,
   onTogglePlay,
   onToggleLock,
-  onUploadTrack
+  onUploadTrack,
+  showPlayer = true,
+  showRecommendations = true,
+  showLibrary = true,
+  showUpload = true
 }: BgmDockProps) {
   const [pendingTrackId, setPendingTrackId] = useState<string>();
   const [file, setFile] = useState<File>();
@@ -65,7 +74,7 @@ export function BgmDock({
   const [tempo, setTempo] = useState<Tempo>("medium");
 
   const currentTrack = useMemo(
-    () => tracks.find((track) => track.id === currentTrackId),
+    () => tracks.find((track) => track.id === currentTrackId) ?? tracks[0],
     [currentTrackId, tracks]
   );
   const pendingTrack = useMemo(
@@ -111,33 +120,44 @@ export function BgmDock({
   }
 
   return (
-    <section className="bgm-dock" aria-label="BGM 播放与推荐">
-      <details className="panel-section" open>
-        <summary>
-          <span><Icon name="play" />当前播放</span>
-          <Icon name="chevron" />
-        </summary>
-        <div className="section-body bgm-now">
-          <h3>{currentTrack?.title ?? "尚未选择曲目"}</h3>
-          {currentTrack?.licenseNote && <p>{currentTrack.licenseNote}</p>}
+    <section className="bgm-dock" aria-label={showPlayer ? "BGM 播放与推荐" : "BGM 曲库面板"}>
+      {showPlayer && (
+      <section className="bgm-player-card" aria-label="BGM 常驻播放器">
+        <img alt="默认 BGM 封面" className="bgm-cover" src={defaultBgmCover} />
+        <div className="bgm-player-main">
+          <div>
+            <h3>{currentTrack?.title ?? "Night Rain · Ambient"}</h3>
+            <p>{currentTrack ? describeTrackTags(currentTrack) : "雨夜 · 氛围"}</p>
+          </div>
+          <div className="bgm-player-controls">
+            <button className="icon-button" aria-label="上一首" type="button" disabled>
+              <Icon name="play" />
+            </button>
+            <button className="round-play-button" type="button" onClick={onTogglePlay} disabled={!currentTrack}>
+              <Icon name={isPlaying ? "pause" : "play"} />
+              <span>{isPlaying ? "暂停" : "播放"}</span>
+            </button>
+            <button className="icon-button" aria-label="下一首" type="button" disabled>
+              <Icon name="play" />
+            </button>
+            <button className="icon-button" aria-label={lockedTrackId ? "解除锁定当前曲" : "锁定当前曲"} type="button" onClick={onToggleLock} disabled={!currentTrack}>
+              <Icon name="settings" />
+            </button>
+          </div>
           {currentTrack?.fileRef && (
             <audio aria-label="本地音频播放器" className="bgm-audio" controls src={currentTrack.fileRef} />
           )}
-          <div className="bgm-actions">
-            <button className="button-secondary" type="button" onClick={onTogglePlay} disabled={!currentTrack}>
-              <Icon name={isPlaying ? "pause" : "play"} />
-              {isPlaying ? "暂停" : "播放"}
-            </button>
-            <button className="button-secondary" type="button" onClick={onToggleLock} disabled={!currentTrack}>
-              {lockedTrackId ? "解除锁定" : "锁定当前曲"}
-            </button>
-          </div>
         </div>
-      </details>
+      </section>
+      )}
 
+      {showRecommendations && (
       <details className="panel-section" open>
         <summary>
-          <span><Icon name="music" />氛围推荐</span>
+          <span>
+            <Icon name="music" />
+            氛围推荐
+          </span>
           <Icon name="chevron" />
         </summary>
         <div className="section-body bgm-recommendations">
@@ -164,6 +184,7 @@ export function BgmDock({
           )}
         </div>
       </details>
+      )}
 
       {pendingTrack && (
         <div className="bgm-confirm" role="alert">
@@ -179,9 +200,13 @@ export function BgmDock({
         </div>
       )}
 
+      {showLibrary && (
       <details className="panel-section" open>
         <summary>
-          <span><Icon name="music" />我的曲库</span>
+          <span>
+            <Icon name="music" />
+            我的曲库
+          </span>
           <small>{tracks.length} 首</small>
         </summary>
         <section className="section-body bgm-library" aria-label="我的 BGM 曲库">
@@ -212,10 +237,15 @@ export function BgmDock({
           ))}
         </section>
       </details>
+      )}
 
+      {showUpload && (
       <details className="panel-section">
         <summary>
-          <span><Icon name="upload" />添加本地音频</span>
+          <span>
+            <Icon name="upload" />
+            添加本地音频
+          </span>
           <Icon name="chevron" />
         </summary>
         <form className="section-body bgm-upload" onSubmit={submitUpload}>
@@ -291,6 +321,7 @@ export function BgmDock({
           </button>
         </form>
       </details>
+      )}
     </section>
   );
 }

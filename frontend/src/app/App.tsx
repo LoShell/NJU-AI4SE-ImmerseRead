@@ -3,6 +3,7 @@ import { createAnnotationFromSelection, type AnnotationDraft } from "../annotati
 import { builtInTracks } from "../bgm/builtInTracks";
 import { recommendBgm } from "../bgm/bgmMatcher";
 import type { AtmosphereProfile, BgmRecommendation, BgmTrack } from "../bgm/bgmTypes";
+import defaultBookCover from "../assets/default-book-cover.png";
 import { AnnotationToolbar } from "../components/AnnotationToolbar";
 import { BgmDock, type UploadedBgmInput } from "../components/BgmDock";
 import { CompanionPanel } from "../components/CompanionPanel";
@@ -75,6 +76,20 @@ export function App() {
     }
     return readerState.segments.find((segment) => segment.id === activeSegmentId) ?? readerState.segments[0];
   }, [activeSegmentId, readerState]);
+
+  const totalBookChars = useMemo(
+    () => readerState?.segments.reduce((total, segment) => total + segment.text.length, 0) ?? 0,
+    [readerState]
+  );
+
+  const bookProgressPercent = useMemo(() => {
+    if (!readerState || !activeSegment || !progress || totalBookChars <= 0) {
+      return 0;
+    }
+    return Math.min(100, Math.round((progress.absoluteCharOffset / totalBookChars) * 100));
+  }, [activeSegment, progress, readerState, totalBookChars]);
+
+  const chapterWordCount = activeSegment?.text.length ?? 0;
 
   useEffect(() => {
     void listBgmTracks().then((tracks) => setUserBgmTracks(tracks.map(hydrateBgmTrack)));
@@ -247,7 +262,7 @@ export function App() {
       darkness: input.darkness,
       warmth: input.warmth,
       tempo: input.tempo,
-      licenseNote: "用户本地上传，仅保存在当前浏览器。",
+      licenseNote: "用户本地上传，仅保存到当前浏览器。",
       createdAt: now
     };
     const track = hydrateBgmTrack(persistedTrack);
@@ -281,27 +296,65 @@ export function App() {
           onClick={() => setIsLibraryCollapsed((value) => !value)}
           type="button"
         >
-          <Icon name="book" />
+          <Icon name="chevron" />
         </button>
 
-        <div className="panel-content">
+        <div className="panel-content library-content">
           <div className="brand-block">
-            <p className="eyebrow">local-first novel reader</p>
+            <div className="brand-mark" aria-hidden="true">
+              <Icon name="book" />
+            </div>
             <h1>ImmerseRead</h1>
-            <p>上传自己的 TXT，把阅读、章节和进度留在本地。</p>
           </div>
 
-          <label className="upload-control">
-            <span><Icon name="upload" />上传 TXT 小说</span>
-            <input aria-label="上传 TXT 小说" accept=".txt,text/plain" type="file" onChange={handleTxtUpload} />
-          </label>
+          <section className="library-section">
+            <div className="section-title-row">
+              <h2>本地书库</h2>
+              <button className="icon-button subtle" aria-label="折叠本地书库" type="button">
+                <Icon name="chevron" />
+              </button>
+            </div>
 
-          <p className="import-status" role="status">
-            {importStatus}
-          </p>
+            <label className="upload-control">
+              <span>
+                <Icon name="upload" />
+                导入 TXT
+              </span>
+              <input aria-label="上传 TXT 小说" accept=".txt,text/plain" type="file" onChange={handleTxtUpload} />
+            </label>
+
+            <article className="book-card">
+              <img alt="默认书籍封面" className="book-cover" src={defaultBookCover} />
+              <div className="book-meta">
+                <h3>{readerState?.book.title ?? "暂无书籍"}</h3>
+                <p>{readerState ? "本地 TXT" : "匿名作者"}</p>
+                {readerState && <p>{readerState.book.sourceFileName}</p>}
+                <small>{readerState ? `${readerState.segments.length} 个片段` : "文件大小未知"}</small>
+              </div>
+            </article>
+
+            <div className="progress-block">
+              <div>
+                <span>阅读进度</span>
+                <strong>{bookProgressPercent}%</strong>
+              </div>
+              <div className="progress-track">
+                <span style={{ width: `${bookProgressPercent}%` }} />
+              </div>
+            </div>
+
+            <p className="import-status" role="status">
+              {importStatus}
+            </p>
+          </section>
 
           <nav aria-label="章节列表" className="chapter-list">
-            <h2>章节</h2>
+            <div className="section-title-row">
+              <h2>章节目录</h2>
+              <button className="icon-button subtle" aria-label="章节设置" type="button">
+                <Icon name="settings" />
+              </button>
+            </div>
             {readerState ? (
               readerState.segments.map((segment) => (
                 <button
@@ -312,51 +365,43 @@ export function App() {
                   onClick={() => void selectSegment(segment)}
                   type="button"
                 >
+                  <Icon name="note" />
                   <span>{segment.title}</span>
-                  <small>{segment.type === "chapter" ? "章节" : "片段"}</small>
                 </button>
               ))
             ) : (
-              <p className="empty-hint">还没有书。先导入一本 TXT。</p>
+              <p className="empty-hint">导入 TXT 后会在这里显示章节。</p>
             )}
           </nav>
+
+          <button className="library-manage-button" type="button">
+            <Icon name="book" />
+            管理书籍
+          </button>
         </div>
       </aside>
 
       <section className="reading-stage" aria-label="阅读区">
-        <div className="storage-notice" role="status" aria-label="本地保存提醒">
-          书籍、批注和 BGM 保存在当前浏览器；刷新通常不会丢失，清除浏览器数据会删除本地记录。
-        </div>
-
-        <div className="reader-toolbar">
-          <div>
-            <p className="eyebrow">{readerState?.book.sourceFileName ?? "未选择书籍"}</p>
-            <h2>{readerState?.book.title ?? "准备开始阅读"}</h2>
-          </div>
-
-          <div className="reader-controls" aria-label="阅读设置">
-            <button className="button-secondary" type="button" onClick={() => setFontSize((value) => Math.max(14, value - 1))}>
-              A-
-            </button>
-            <button className="button-secondary" type="button" onClick={() => setFontSize((value) => Math.min(24, value + 1))}>
-              A+
-            </button>
-            <button className="button-secondary" type="button" onClick={() => setLineHeight((value) => Number(Math.max(1.5, value - 0.1).toFixed(2)))}>
-              行距-
-            </button>
-            <button className="button-secondary" type="button" onClick={() => setLineHeight((value) => Number(Math.min(2.2, value + 0.1).toFixed(2)))}>
-              行距+
-            </button>
-          </div>
+        <div className="reader-floating-toolbar" aria-label="阅读设置">
+          <button type="button" onClick={() => setFontSize((value) => Math.max(14, value - 1))}>
+            A-
+          </button>
+          <button type="button" onClick={() => setFontSize((value) => Math.min(24, value + 1))}>
+            A+
+          </button>
+          <button type="button">字体</button>
+          <button type="button" onClick={() => setLineHeight((value) => Number(Math.min(2.2, value + 0.1).toFixed(2)))}>
+            行距
+          </button>
+          <button type="button" onClick={() => setTheme(theme === "paper" ? "sepia" : "paper")}>
+            主题
+          </button>
         </div>
 
         <article className="reader-page">
           {activeSegment ? (
             <>
               <header className="segment-header">
-                <p>
-                  {activeSegment.index + 1} / {readerState?.segments.length}
-                </p>
                 <h2>{activeSegment.title}</h2>
               </header>
               <div className="segment-text" onMouseUp={captureSelection} style={{ fontSize: `${fontSize}px`, lineHeight }}>
@@ -367,11 +412,17 @@ export function App() {
             </>
           ) : (
             <div className="reader-empty">
-              <h2>把 TXT 拖进你的阅读空间</h2>
-              <p>阅读内容不会联网；书搭子只会看到你已经读过的上下文。</p>
+              <h2>导入 TXT 后开始阅读。</h2>
+              <p>阅读内容只来自你本地上传的小说文件。</p>
             </div>
           )}
         </article>
+
+        <footer className="reader-footer">
+          <span>本章进度 {activeSegment ? "100%" : "--"}</span>
+          <div className="footer-line" />
+          <span>本章 {chapterWordCount} 字</span>
+        </footer>
       </section>
 
       <aside aria-label="阅读陪伴面板" className="companion-panel">
@@ -381,24 +432,10 @@ export function App() {
           onClick={() => setIsCompanionCollapsed((value) => !value)}
           type="button"
         >
-          <Icon name="message" />
+          <Icon name="chevron" />
         </button>
 
-        <div className="panel-content">
-          <div className="theme-switcher" aria-label="阅读主题">
-            {(Object.keys(THEME_LABELS) as ReaderTheme[]).map((themeName) => (
-              <button
-                aria-pressed={theme === themeName}
-                className="button-secondary"
-                key={themeName}
-                onClick={() => setTheme(themeName)}
-                type="button"
-              >
-                {THEME_LABELS[themeName]}
-              </button>
-            ))}
-          </div>
-
+        <div className="panel-content companion-content">
           <div className="panel-tabs">
             {(Object.keys(TAB_META) as RightPanelTab[]).map((tabName) => (
               <button
@@ -413,77 +450,101 @@ export function App() {
             ))}
           </div>
 
-          {rightTab === "companion" && (
-            <CompanionPanel
-              activeSegment={activeSegment}
-              annotationNote={companionContext?.note}
-              bookId={readerState?.book.id}
-              messages={chatMessages}
-              onPersistMessage={persistChatMessage}
-              progress={progress}
-              segments={readerState?.segments ?? []}
-              selectedText={companionContext?.selectedText}
-            />
-          )}
-
-          {rightTab === "annotations" && (
-            <section className="assistant-card annotation-panel">
-              <p className="eyebrow">local notes</p>
-              <h2>批注</h2>
-              {annotationDraft ? (
-                <AnnotationToolbar
-                  draft={annotationDraft}
-                  onAskCompanion={askCompanionWithAnnotation}
-                  onSave={(draft) => void persistAnnotation(draft)}
-                />
-              ) : (
-                <p>选中正文后，可以在这里保存批注或带着片段问书搭子。</p>
-              )}
-              <details className="panel-section annotation-list-section" open>
-                <summary>
-                  <span><Icon name="note" />本章批注</span>
-                  <Icon name="chevron" />
-                </summary>
-                <div className="section-body annotation-list" aria-label="本章批注记录">
-                  {annotations.length > 0 ? (
-                    annotations.map((annotation) => (
-                      <article className="annotation-item" key={annotation.id}>
-                        <strong>{annotation.selectedText}</strong>
-                        {annotation.note && <p>{annotation.note}</p>}
-                        <button className="button-secondary" onClick={() => askCompanionWithAnnotation(annotation)} type="button">
-                          问书搭子
-                        </button>
-                      </article>
-                    ))
-                  ) : (
-                    <p>暂无批注记录。</p>
-                  )}
-                </div>
-              </details>
-            </section>
-          )}
-
-          {rightTab === "bgm" && (
-            <section className="assistant-card">
-              <p className="eyebrow">atmosphere</p>
-              <h2>BGM 推荐</h2>
-              {atmosphereProfile?.chapterEndPrompt && <p>{atmosphereProfile.chapterEndPrompt}</p>}
-              <BgmDock
-                currentTrackId={currentTrackId}
-                isAnalyzing={isAnalyzingAtmosphere}
-                isPlaying={isBgmPlaying}
-                lockedTrackId={lockedTrackId}
-                onAnalyze={() => void runAtmosphereAnalysis()}
-                onConfirmSwitch={confirmBgmSwitch}
-                onDeleteTrack={(trackId) => void removeBgmTrack(trackId)}
-                onToggleLock={toggleBgmLock}
-                onTogglePlay={() => setIsBgmPlaying((value) => !value)}
-                onUploadTrack={(input) => void uploadBgmTrack(input)}
-                recommendations={bgmRecommendations}
-                tracks={allBgmTracks}
+          <div className="side-tab-content">
+            {rightTab === "companion" && (
+              <CompanionPanel
+                activeSegment={activeSegment}
+                annotationNote={companionContext?.note}
+                bookId={readerState?.book.id}
+                messages={chatMessages}
+                onPersistMessage={persistChatMessage}
+                progress={progress}
+                segments={readerState?.segments ?? []}
+                selectedText={companionContext?.selectedText}
               />
-            </section>
-          )}
+            )}
+
+            {rightTab === "annotations" && (
+              <section className="assistant-card annotation-panel">
+                <h2>批注</h2>
+                {annotationDraft ? (
+                  <AnnotationToolbar
+                    draft={annotationDraft}
+                    onAskCompanion={askCompanionWithAnnotation}
+                    onSave={(draft) => void persistAnnotation(draft)}
+                  />
+                ) : (
+                  <p>选中正文后，可以在这里保存批注或带着片段问书搭子。</p>
+                )}
+                <details className="panel-section annotation-list-section" open>
+                  <summary>
+                    <span>
+                      <Icon name="note" />
+                      本章批注
+                    </span>
+                    <Icon name="chevron" />
+                  </summary>
+                  <div className="section-body annotation-list" aria-label="本章批注记录">
+                    {annotations.length > 0 ? (
+                      annotations.map((annotation) => (
+                        <article className="annotation-item" key={annotation.id}>
+                          <strong>{annotation.selectedText}</strong>
+                          {annotation.note && <p>{annotation.note}</p>}
+                          <button className="button-secondary" onClick={() => askCompanionWithAnnotation(annotation)} type="button">
+                            问书搭子
+                          </button>
+                        </article>
+                      ))
+                    ) : (
+                      <p>暂无批注记录。</p>
+                    )}
+                  </div>
+                </details>
+              </section>
+            )}
+
+            {rightTab === "bgm" && (
+              <section className="assistant-card">
+                <h2>BGM 曲库</h2>
+                <BgmDock
+                  currentTrackId={currentTrackId}
+                  isAnalyzing={isAnalyzingAtmosphere}
+                  isPlaying={isBgmPlaying}
+                  lockedTrackId={lockedTrackId}
+                  onAnalyze={() => void runAtmosphereAnalysis()}
+                  onConfirmSwitch={confirmBgmSwitch}
+                  onDeleteTrack={(trackId) => void removeBgmTrack(trackId)}
+                  onToggleLock={toggleBgmLock}
+                  onTogglePlay={() => setIsBgmPlaying((value) => !value)}
+                  onUploadTrack={(input) => void uploadBgmTrack(input)}
+                  recommendations={bgmRecommendations}
+                  showPlayer={false}
+                  showRecommendations={false}
+                  tracks={allBgmTracks}
+                />
+              </section>
+            )}
+          </div>
+
+          <div className="persistent-bgm-dock">
+            <BgmDock
+              currentTrackId={currentTrackId}
+              isAnalyzing={isAnalyzingAtmosphere}
+              isPlaying={isBgmPlaying}
+              lockedTrackId={lockedTrackId}
+              onAnalyze={() => void runAtmosphereAnalysis()}
+              onConfirmSwitch={confirmBgmSwitch}
+              onDeleteTrack={(trackId) => void removeBgmTrack(trackId)}
+              onToggleLock={toggleBgmLock}
+              onTogglePlay={() => setIsBgmPlaying((value) => !value)}
+              onUploadTrack={(input) => void uploadBgmTrack(input)}
+              recommendations={bgmRecommendations}
+              showLibrary={false}
+              showRecommendations={false}
+              showUpload={false}
+              tracks={allBgmTracks}
+            />
+          </div>
         </div>
       </aside>
     </main>

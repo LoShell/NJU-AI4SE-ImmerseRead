@@ -46,10 +46,10 @@ const recommendations: BgmRecommendation[] = [
 ];
 
 describe("BgmDock", () => {
-  it("renders compact collapsible BGM sections", () => {
+  it("renders a compact player card with the default BGM cover", () => {
     renderDock({ tracks: uploadedTracks });
 
-    expect(screen.getByText("当前播放")).toBeInTheDocument();
+    expect(screen.getByAltText("默认 BGM 封面")).toBeInTheDocument();
     expect(screen.getByText("氛围推荐")).toBeInTheDocument();
     expect(screen.getByText("我的曲库")).toBeInTheDocument();
     expect(screen.getByText("添加本地音频")).toBeInTheDocument();
@@ -98,7 +98,7 @@ describe("BgmDock", () => {
     fireEvent.change(screen.getByLabelText("音频文件"), { target: { files: [file] } });
     fireEvent.change(screen.getByLabelText("曲名"), { target: { value: "雨夜" } });
     fireEvent.change(screen.getByLabelText("情绪标签"), { target: { value: "悬疑,安静" } });
-    fireEvent.change(screen.getByLabelText("场景标签"), { target: { value: "雨,夜晚" } });
+    fireEvent.change(screen.getByLabelText("场景标签"), { target: { value: "雨 夜晚" } });
     fireEvent.click(screen.getByRole("button", { name: "保存本地音频" }));
 
     expect(onUploadTrack).toHaveBeenCalledWith(
