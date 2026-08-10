@@ -1,11 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ReadingProgress, Segment } from "../domain/models";
+import type { Annotation, ChatMessage, ReadingProgress, Segment } from "../domain/models";
 import type { ParsedBook } from "../reader/txtParser";
 import {
   getBookWithSegments,
   getReadingProgress,
+  listAnnotations,
+  listChatMessages,
+  saveAnnotation,
+  saveChatMessage,
   saveParsedBook,
-  saveReadingProgress
+  saveReadingProgress,
+  deleteAnnotation
 } from "./libraryRepository";
 
 const fakeIdb = vi.hoisted(() => {
@@ -47,17 +52,22 @@ const fakeIdb = vi.hoisted(() => {
   };
 
   const getAllFromIndex = async (storeName: string, indexName: string, key: IDBValidKey) => {
-    const property = indexName === "by-source" ? "source" : "bookId";
+    const property = indexName === "by-source" ? "source" : indexName;
     return Array.from(stores[storeName].values())
       .filter((value) => (value as Record<string, unknown>)[property] === key)
       .map((value) => structuredClone(value));
+  };
+
+  const deleteRecord = async (storeName: string, key: IDBValidKey) => {
+    stores[storeName].delete(String(key));
   };
 
   const transaction = () => ({
     objectStore: (storeName: string) => ({
       put: (value: unknown, key?: IDBValidKey) => put(storeName, value, key),
       get: (key: IDBValidKey) => get(storeName, key),
-      getAllFromIndex: (indexName: string, key: IDBValidKey) => getAllFromIndex(storeName, indexName, key)
+      getAllFromIndex: (indexName: string, key: IDBValidKey) => getAllFromIndex(storeName, indexName, key),
+      delete: (key: IDBValidKey) => deleteRecord(storeName, key)
     }),
     done: Promise.resolve()
   });
@@ -68,6 +78,7 @@ const fakeIdb = vi.hoisted(() => {
       put,
       get,
       getAllFromIndex,
+      delete: deleteRecord,
       transaction
     })),
     reset: () => {
@@ -132,6 +143,47 @@ describe("libraryRepository", () => {
     await expect(getBookWithSegments("missing-book")).resolves.toBeUndefined();
     await expect(getReadingProgress("missing-book")).resolves.toBeUndefined();
   });
+
+  it("saves, lists, and deletes annotations for a segment", async () => {
+    const first = createAnnotation({ id: "annotation-1", segmentId: "segment-1", selectedText: "alpha" });
+    const second = createAnnotation({ id: "annotation-2", segmentId: "segment-1", selectedText: "beta" });
+    const otherSegment = createAnnotation({ id: "annotation-3", segmentId: "segment-2", selectedText: "gamma" });
+
+    await saveAnnotation(second);
+    await saveAnnotation(otherSegment);
+    await saveAnnotation(first);
+
+    await expect(listAnnotations("book-1", "segment-1")).resolves.toEqual([first, second]);
+
+    await deleteAnnotation("annotation-1");
+
+    await expect(listAnnotations("book-1", "segment-1")).resolves.toEqual([second]);
+  });
+
+  it("saves and lists chat messages for a book in creation order", async () => {
+    const second = createChatMessage({
+      id: "message-2",
+      content: "second",
+      createdAt: "2026-08-07T02:00:00.000Z"
+    });
+    const first = createChatMessage({
+      id: "message-1",
+      content: "first",
+      createdAt: "2026-08-07T01:00:00.000Z"
+    });
+    const otherBook = createChatMessage({
+      id: "message-3",
+      bookId: "book-2",
+      content: "other",
+      createdAt: "2026-08-07T00:00:00.000Z"
+    });
+
+    await saveChatMessage(second);
+    await saveChatMessage(otherBook);
+    await saveChatMessage(first);
+
+    await expect(listChatMessages("book-1")).resolves.toEqual([first, second]);
+  });
 });
 
 function createParsedBook(input: { bookId: string; segments: Segment[] }): ParsedBook {
@@ -167,5 +219,36 @@ function createSegment(input: {
     type: "chapter",
     parseConfidence: "high",
     atmosphereStatus: "pending"
+  };
+}
+
+function createAnnotation(overrides: Partial<Annotation>): Annotation {
+  return {
+    id: "annotation-1",
+    bookId: "book-1",
+    segmentId: "segment-1",
+    startChar: 0,
+    endChar: 5,
+    selectedText: "alpha",
+    note: "",
+    color: "yellow",
+    createdAt: "2026-08-07T00:00:00.000Z",
+    updatedAt: "2026-08-07T00:00:00.000Z",
+    ...overrides
+  };
+}
+
+function createChatMessage(overrides: Partial<ChatMessage>): ChatMessage {
+  return {
+    id: "message-1",
+    bookId: "book-1",
+    segmentId: "segment-1",
+    role: "assistant",
+    content: "content",
+    contextStartChar: 0,
+    contextEndChar: 10,
+    spoilerPolicy: "strict",
+    createdAt: "2026-08-07T00:00:00.000Z",
+    ...overrides
   };
 }

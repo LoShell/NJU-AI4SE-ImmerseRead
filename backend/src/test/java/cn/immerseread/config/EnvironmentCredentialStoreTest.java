@@ -23,4 +23,18 @@ class EnvironmentCredentialStoreTest {
         assertThat(store.resolveApiKey()).isEmpty();
         assertThat(store.status().configured()).isFalse();
     }
+
+    @Test
+    void propertiesUseGenericLlmSettingsBeforeLegacyOpenAiSettings() {
+        LlmProperties properties = new LlmProperties();
+        properties.setProvider("deepseek");
+        properties.setApiKey("generic-key");
+        properties.setApiUrl("https://api.deepseek.com");
+        properties.setModelName("deepseek-v4-flash");
+
+        assertThat(properties.getProvider()).isEqualTo("deepseek");
+        assertThat(properties.getApiKey()).isEqualTo("generic-key");
+        assertThat(properties.getApiUrl()).isEqualTo("https://api.deepseek.com");
+        assertThat(properties.getModelName()).isEqualTo("deepseek-v4-flash");
+    }
 }

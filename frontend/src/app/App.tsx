@@ -1,7 +1,17 @@
-import { useMemo, useState } from "react";
-import type { Book, Segment } from "../domain/models";
+import { useEffect, useMemo, useState } from "react";
+import { createAnnotationFromSelection, type AnnotationDraft } from "../annotations/annotationRanges";
+import { AnnotationToolbar } from "../components/AnnotationToolbar";
+import { CompanionPanel } from "../components/CompanionPanel";
+import type { Annotation, Book, ChatMessage, ReadingProgress, Segment } from "../domain/models";
 import { parseTxtBook } from "../reader/txtParser";
-import { saveParsedBook, saveReadingProgress } from "../storage/libraryRepository";
+import {
+  listAnnotations,
+  listChatMessages,
+  saveAnnotation,
+  saveChatMessage,
+  saveParsedBook,
+  saveReadingProgress
+} from "../storage/libraryRepository";
 
 type ReaderTheme = "paper" | "night" | "sepia";
 type RightPanelTab = "companion" | "annotations" | "bgm";
@@ -20,6 +30,11 @@ const THEME_LABELS: Record<ReaderTheme, string> = {
 export function App() {
   const [readerState, setReaderState] = useState<ReaderState>();
   const [activeSegmentId, setActiveSegmentId] = useState<string>();
+  const [progress, setProgress] = useState<ReadingProgress>();
+  const [annotations, setAnnotations] = useState<Annotation[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [annotationDraft, setAnnotationDraft] = useState<AnnotationDraft>();
+  const [companionContext, setCompanionContext] = useState<AnnotationDraft>();
   const [theme, setTheme] = useState<ReaderTheme>("paper");
   const [fontSize, setFontSize] = useState(18);
   const [lineHeight, setLineHeight] = useState(1.85);
@@ -32,6 +47,17 @@ export function App() {
     }
     return readerState.segments.find((segment) => segment.id === activeSegmentId) ?? readerState.segments[0];
   }, [activeSegmentId, readerState]);
+
+  useEffect(() => {
+    if (!readerState?.book.id || !activeSegment?.id) {
+      setAnnotations([]);
+      setChatMessages([]);
+      return;
+    }
+
+    void listAnnotations(readerState.book.id, activeSegment.id).then(setAnnotations);
+    void listChatMessages(readerState.book.id).then(setChatMessages);
+  }, [activeSegment?.id, readerState?.book.id]);
 
   async function handleTxtUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -49,8 +75,14 @@ export function App() {
       const text = await readTextFile(file);
       const parsed = parseTxtBook({ fileName: file.name, text });
       await saveParsedBook(parsed);
+      const firstSegment = parsed.segments[0];
       setReaderState(parsed);
-      setActiveSegmentId(parsed.segments[0]?.id);
+      setActiveSegmentId(firstSegment?.id);
+      setAnnotationDraft(undefined);
+      setCompanionContext(undefined);
+      if (firstSegment) {
+        setProgress(createProgress(firstSegment, firstSegment.text.length));
+      }
       setImportStatus(`已导入 ${parsed.segments.length} 个阅读片段`);
     } catch {
       setImportStatus("导入失败，请确认文件可读取");
@@ -60,14 +92,65 @@ export function App() {
   }
 
   async function selectSegment(segment: Segment) {
+    const nextProgress = createProgress(segment, segment.text.length);
     setActiveSegmentId(segment.id);
-    await saveReadingProgress({
-      bookId: segment.bookId,
-      segmentId: segment.id,
-      charOffsetInSegment: 0,
-      absoluteCharOffset: segment.startChar,
-      updatedAt: new Date().toISOString()
-    });
+    setProgress(nextProgress);
+    setAnnotationDraft(undefined);
+    await saveReadingProgress(nextProgress);
+  }
+
+  function captureSelection() {
+    if (!readerState?.book.id || !activeSegment) {
+      return;
+    }
+
+    const selectedText = window.getSelection()?.toString().trim();
+    if (!selectedText) {
+      return;
+    }
+
+    const startChar = activeSegment.text.indexOf(selectedText);
+    if (startChar < 0) {
+      return;
+    }
+
+    setAnnotationDraft(
+      createAnnotationFromSelection({
+        bookId: readerState.book.id,
+        segmentId: activeSegment.id,
+        segmentText: activeSegment.text,
+        startChar,
+        endChar: startChar + selectedText.length,
+        note: "",
+        color: "yellow"
+      })
+    );
+    setRightTab("annotations");
+  }
+
+  async function persistAnnotation(draft: AnnotationDraft) {
+    const now = new Date().toISOString();
+    const annotation: Annotation = {
+      id: crypto.randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+      ...draft
+    };
+    await saveAnnotation(annotation);
+    setAnnotations((current) => [...current, annotation].sort((left, right) => left.startChar - right.startChar));
+    setAnnotationDraft(undefined);
+  }
+
+  function askCompanionWithAnnotation(draft: AnnotationDraft) {
+    setCompanionContext(draft);
+    setRightTab("companion");
+  }
+
+  async function persistChatMessage(message: ChatMessage) {
+    await saveChatMessage(message);
+    setChatMessages((current) =>
+      current.some((saved) => saved.id === message.id) ? current : [...current, message]
+    );
   }
 
   return (
@@ -142,7 +225,7 @@ export function App() {
                 </p>
                 <h2>{activeSegment.title}</h2>
               </header>
-              <div className="segment-text" style={{ fontSize: `${fontSize}px`, lineHeight }}>
+              <div className="segment-text" onMouseUp={captureSelection} style={{ fontSize: `${fontSize}px`, lineHeight }}>
                 {activeSegment.text.split(/\r?\n/).map((line, index) => (
                   <p key={`${activeSegment.id}-${index}`}>{line || "\u00a0"}</p>
                 ))}
@@ -184,21 +267,47 @@ export function App() {
         </div>
 
         {rightTab === "companion" && (
-          <section className="assistant-card">
-            <p className="eyebrow">anti-spoiler companion</p>
-            <h2>书搭子</h2>
-            <p>这里会接入仿剧透聊天：短回复、陪伴感、只基于已读上下文。</p>
-            <button type="button" disabled>
-              等待读者提问
-            </button>
-          </section>
+          <CompanionPanel
+            activeSegment={activeSegment}
+            annotationNote={companionContext?.note}
+            bookId={readerState?.book.id}
+            messages={chatMessages}
+            onPersistMessage={persistChatMessage}
+            progress={progress}
+            segments={readerState?.segments ?? []}
+            selectedText={companionContext?.selectedText}
+          />
         )}
 
         {rightTab === "annotations" && (
-          <section className="assistant-card">
+          <section className="assistant-card annotation-panel">
             <p className="eyebrow">local notes</p>
             <h2>批注</h2>
-            <p>后续选中文本后，会在这里保存想法、疑问和角色线索。</p>
+            {annotationDraft ? (
+              <AnnotationToolbar
+                draft={annotationDraft}
+                onAskCompanion={askCompanionWithAnnotation}
+                onSave={(draft) => void persistAnnotation(draft)}
+              />
+            ) : (
+              <p>选中正文后，可以在这里保存批注或带着片段问书搭子。</p>
+            )}
+            <div className="annotation-list" aria-label="本章批注记录">
+              <h3>本章批注</h3>
+              {annotations.length > 0 ? (
+                annotations.map((annotation) => (
+                  <article className="annotation-item" key={annotation.id}>
+                    <strong>{annotation.selectedText}</strong>
+                    {annotation.note && <p>{annotation.note}</p>}
+                    <button onClick={() => askCompanionWithAnnotation(annotation)} type="button">
+                      问书搭子
+                    </button>
+                  </article>
+                ))
+              ) : (
+                <p>暂无批注记录。</p>
+              )}
+            </div>
           </section>
         )}
 
@@ -212,6 +321,16 @@ export function App() {
       </aside>
     </main>
   );
+}
+
+function createProgress(segment: Segment, charOffsetInSegment: number): ReadingProgress {
+  return {
+    bookId: segment.bookId,
+    segmentId: segment.id,
+    charOffsetInSegment,
+    absoluteCharOffset: segment.startChar + charOffsetInSegment,
+    updatedAt: new Date().toISOString()
+  };
 }
 
 function readTextFile(file: File): Promise<string> {

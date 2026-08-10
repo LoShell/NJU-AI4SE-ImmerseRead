@@ -10,7 +10,12 @@ public class EnvironmentCredentialStore implements CredentialStore {
 
     @Autowired
     public EnvironmentCredentialStore(LlmProperties properties) {
-        this(firstNonBlank(properties.getApiKey(), System.getenv("OPENAI_API_KEY"), System.getenv("LLM_API_KEY")));
+        this(firstNonBlank(
+            properties.getApiKey(),
+            System.getenv("LLM_API_KEY"),
+            System.getenv("DEEPSEEK_API_KEY"),
+            System.getenv("OPENAI_API_KEY")
+        ));
     }
 
     public EnvironmentCredentialStore(String apiKey) {

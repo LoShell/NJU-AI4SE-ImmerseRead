@@ -199,3 +199,42 @@
   - `cd frontend && npm run test`：20 tests passed。
   - `cd frontend && npm run build`：passed。
 - Commit：待用户审核后提交。
+
+### Task 8: 批注与书搭子面板集成
+
+- 执行者：Codex 主对话直接实现。
+- 关键取舍：
+  - 不引入 agent loop；书搭子只是前端表单调用后端 `/api/llm/chat`。
+  - 批注、聊天记录继续本地优先，存入 IndexedDB。
+  - 选中文本后可保存批注，也可把该片段和笔记带入书搭子上下文。
+  - `sendCompanionChat` 只调用后端代理，不接触任何供应商凭据。
+- TDD 记录：
+  - 先新增 `annotationRanges.test.ts`、`client.test.ts`、`CompanionPanel.test.tsx`、`AnnotationToolbar.test.tsx`，并扩展 `libraryRepository.test.ts`。
+  - 验证红灯：缺少 annotation utility、LLM client、CompanionPanel、AnnotationToolbar 和仓储方法。
+  - 实现后验证绿灯。
+- 实现内容：
+  - `createAnnotationFromSelection`：校验选择范围、规范反向选择、生成批注草稿。
+  - Repository：增加保存/查询/删除批注，保存/查询聊天记录。
+  - `sendCompanionChat`：向 `/api/llm/chat` 发送防剧透上下文，后端不可用时返回 disabled 文案。
+  - `CompanionPanel`：展示本地聊天、构造 `buildAllowedContext`、发送问题并持久化用户/助手消息。
+  - `AnnotationToolbar`：保存批注、将批注片段带给书搭子。
+  - `App.tsx`：接入选中文本批注、批注列表、书搭子面板，并恢复可读中文 UI 文案。
+- 验证：
+  - `cd frontend && npm run test`：30 tests passed。
+  - `cd frontend && npm run build`：passed。
+- Commit：待用户审核后提交。
+
+### Task 8 Close-out: 通用 LLM Provider 配置
+
+- 执行者：Codex 主对话直接实现。
+- 目标：让老师或测试者可以使用自己的 LLM key 验收项目，而不需要获取作者的真实 key。
+- 关键取舍：
+  - 主配置改为 `LLM_PROVIDER`、`LLM_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`。
+  - 保留 `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_MODEL`、`DEEPSEEK_API_KEY` 兼容。
+  - `openai` provider 使用 Responses API：`input` / `output_text`。
+  - `deepseek` provider 使用 Chat Completions：`messages` / `choices[0].message.content`。
+  - 前端 Vite dev server 增加 `/api -> http://localhost:8080` 代理，便于本地联调。
+- 文档：
+  - README 增加 DeepSeek 和 OpenAI 两套本地配置命令。
+  - SPEC / PLAN 更新为 `LLM_*` 优先，真实凭据仍不得提交。
+- Commit：待用户审核后提交。

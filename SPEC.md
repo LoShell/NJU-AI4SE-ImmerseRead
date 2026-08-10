@@ -372,7 +372,7 @@ ImmerseRead 是一个面向小说和网文读者的本地优先沉浸式 TXT 阅
 
 凭据生命周期：
 
-- 录入：优先使用后端提供的凭据管理命令以隐藏输入方式录入 key，并写入操作系统凭据管理器；Windows 目标机使用 Windows Credential Manager。容器或 CI 环境可复制 `.env.example` 为 `.env`，填写 `OPENAI_API_KEY`。
+- 录入：优先使用后端提供的凭据管理命令以隐藏输入方式录入 key，并写入操作系统凭据管理器；Windows 目标机使用 Windows Credential Manager。容器或 CI 环境可复制 `.env.example` 为 `.env`，填写 `LLM_API_KEY`。
 - 查看状态：后端健康检查或凭据管理命令只返回“已配置 / 未配置”，不得回显明文 key。
 - 更新：重新运行凭据录入命令覆盖旧 key；`.env` 模式下修改 `.env` 后重启后端。
 - 清除：运行凭据清除命令删除系统凭据；`.env` 模式下删除 key 后重启后端。清除后 LLM 功能进入禁用状态。
@@ -597,16 +597,17 @@ TXT 上传：
 第一版凭据来源按优先级读取：
 
 1. 操作系统凭据管理器中的 `immerseread.openai.api-key`。
-2. 后端环境变量或 `.env` 中的 `OPENAI_API_KEY`。
+2. 后端环境变量或 `.env` 中的 `LLM_API_KEY`。兼容 `OPENAI_API_KEY` 和 `DEEPSEEK_API_KEY`。
 
 前端永远不保存、不接收供应商凭据。后端不得把 key 写入日志、错误响应、聊天记录或任何数据库。
 
 开发和容器 fallback 使用：
 
 ```text
-OPENAI_API_KEY=
-OPENAI_BASE_URL=
-OPENAI_MODEL=
+LLM_PROVIDER=deepseek
+LLM_API_KEY=
+LLM_BASE_URL=https://api.deepseek.com
+LLM_MODEL=deepseek-v4-flash
 ```
 
 `.env` 是明文文件，必须加入 `.gitignore`；README 需要明确说明 `.env` 与进程环境变量的可见性风险。
@@ -673,7 +674,7 @@ docker compose up --build
 
 ### 8.6 LLM 供应商
 
-- 默认使用 OpenAI API，并通过 `OPENAI_BASE_URL` 保留接入 OpenAI-compatible 服务的可能。
+- 默认通过通用 `LLM_*` 环境变量配置供应商，支持 OpenAI Responses API 和 DeepSeek Chat Completions；保留 `OPENAI_*` 兼容旧配置。
 - 理由：聊天和结构化输出能力稳定；后端适配器可以隔离供应商细节。
 
 ### 8.7 测试

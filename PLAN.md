@@ -175,7 +175,7 @@ If a tool is missing, stop and record the blocker in `AGENT_LOG.md`; do not gues
 - Produces frontend command: `npm run test`, `npm run build`, `npm run dev`, or equivalent `pnpm test`, `pnpm build`, `pnpm dev` when using pnpm.
 - Produces backend command: `./mvnw test` or `mvn test`.
 - Produces backend endpoint: `GET /api/health`.
-- Produces environment variables: `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL`.
+- Produces environment variables: `LLM_PROVIDER`, `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL`; keeps `OPENAI_*` compatibility.
 
 - [ ] **Step 1: Create the minimal frontend test harness**
 
@@ -905,13 +905,14 @@ Rules:
 
 Implementation requirements:
 
-- `LlmProperties` reads `OPENAI_API_KEY`, `OPENAI_BASE_URL`, and `OPENAI_MODEL`.
+- `LlmProperties` reads `LLM_PROVIDER`, `LLM_API_KEY`, `LLM_BASE_URL`, and `LLM_MODEL`, with `OPENAI_*` compatibility.
 - `CredentialStore` exposes `resolveApiKey()`, `status()`, `set(char[] key)`, and `clear()`.
 - `SystemCredentialStore` is the preferred implementation for local runs. On Windows, it stores `immerseread.openai.api-key` in Windows Credential Manager or a documented Java keyring bridge. If unavailable, it returns a clear unsupported message rather than silently writing plaintext.
 - `EnvironmentCredentialStore` is the Docker/CI fallback and reads environment variables or `.env`-provided values.
 - `CredentialsCommand` supports `credentials set`, `credentials status`, and `credentials clear`; status never prints the key.
 - Remove the misspelled `LlmPropertirs` class after `LlmProperties` is in place.
 - If key is blank, return a disabled-feature response without calling provider.
+- Task 8 close-out adds DeepSeek Chat Completions support so teachers can configure their own provider key without receiving the author's credentials.
 - Chat prompt includes: short answer, casual web-novel buddy tone, and spoiler-safe instruction.
 - Atmosphere prompt asks for structured JSON only.
 - Logs must include request metadata, not raw novel text.
@@ -1050,11 +1051,16 @@ git commit -m "feat: build local txt reader flow"
 - Create: `frontend/src/annotations/annotationRanges.ts`
 - Create: `frontend/src/annotations/annotationRanges.test.ts`
 - Create: `frontend/src/components/AnnotationToolbar.tsx`
+- Create: `frontend/src/components/AnnotationToolbar.test.tsx`
 - Create: `frontend/src/components/CompanionPanel.tsx`
+- Create: `frontend/src/components/CompanionPanel.test.tsx`
 - Create: `frontend/src/llm/client.ts`
-- Create: `frontend/src/llm/prompts.ts`
+- Create: `frontend/src/llm/client.test.ts`
 - Modify: `frontend/src/storage/libraryRepository.ts`
-- Modify: `frontend/src/components/ReaderView.tsx`
+- Modify: `frontend/src/storage/libraryRepository.test.ts`
+- Modify: `frontend/src/app/App.tsx`
+- Modify: `frontend/src/app/App.test.tsx`
+- Modify: `frontend/src/styles/global.css`
 
 **Interfaces:**
 
@@ -1062,7 +1068,7 @@ git commit -m "feat: build local txt reader flow"
 - Produces function: `createAnnotationFromSelection(input: SelectionInput): AnnotationDraft`.
 - Produces function: `sendCompanionChat(request: CompanionChatRequest): Promise<CompanionChatResponse>`.
 
-- [ ] **Step 1: Write annotation range tests**
+- [x] **Step 1: Write annotation range tests**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -1100,13 +1106,13 @@ describe("createAnnotationFromSelection", () => {
 });
 ```
 
-- [ ] **Step 2: Run annotation tests and verify they fail**
+- [x] **Step 2: Run annotation tests and verify they fail**
 
 Run: `cd frontend && npm run test -- annotationRanges.test.ts`
 
 Expected: FAIL because annotation utilities are not implemented.
 
-- [ ] **Step 3: Implement annotation utilities and repository methods**
+- [x] **Step 3: Implement annotation utilities and repository methods**
 
 Add repository functions:
 
@@ -1118,7 +1124,7 @@ export async function saveChatMessage(message: ChatMessage): Promise<void>;
 export async function listChatMessages(bookId: string): Promise<ChatMessage[]>;
 ```
 
-- [ ] **Step 4: Implement CompanionPanel**
+- [x] **Step 4: Implement CompanionPanel**
 
 UI behavior:
 
@@ -1128,7 +1134,7 @@ UI behavior:
 - Calls `/api/llm/chat` through `sendCompanionChat`.
 - Displays disabled message when backend reports missing key.
 
-- [ ] **Step 5: Wire annotation-to-chat action**
+- [x] **Step 5: Wire annotation-to-chat action**
 
 Behavior:
 
@@ -1137,7 +1143,13 @@ Behavior:
 - Button opens CompanionPanel with selected text and note prefilled as context.
 - LLM payload includes `contextStartChar` and `contextEndChar`.
 
-- [ ] **Step 6: Run tests**
+- [x] **Step 6: Run tests**
+
+Verification:
+
+- `cd frontend && npm run test -- annotationRanges.test.ts client.test.ts CompanionPanel.test.tsx AnnotationToolbar.test.tsx libraryRepository.test.ts App.test.tsx spoilerGuard.test.ts` passed with 21 tests.
+- `cd frontend && npm run test` passed with 30 tests.
+- `cd frontend && npm run build` passed.
 
 Run: `cd frontend && npm run test -- annotationRanges.test.ts spoilerGuard.test.ts`
 
