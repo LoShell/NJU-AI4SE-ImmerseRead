@@ -1,5 +1,33 @@
 # AGENT_LOG
 
+## 2026-08-12
+
+### Task 12: Frontend MVP Polish And Local Demo Assets
+
+- Executor: Codex main conversation, no subagent, per user request to keep UI context continuous.
+- Key decisions:
+  - Keep TXT reading local-only while supporting common non-UTF-8 Chinese web-novel files via GB18030 fallback.
+  - Register system demo BGM files from `frontend/public/bgm/`; tags remain editable in `frontend/src/bgm/builtInTracks.ts`.
+  - Keep BGM playback simple: previous/next, list looping, repeat-one mode, no random mode.
+  - Remove no-op settings/lock buttons rather than leaving unexplained controls in the UI.
+  - Harden `.gitignore` for root and backend `.env` variants while keeping `.env.example` trackable.
+- TDD record:
+  - Added failing tests for GB18030 TXT decoding, built-in BGM file references, BGM playback mode behavior, media test setup, removal of no-op controls, and BGM genre selector styling.
+  - Red runs failed for the expected missing decoder module, missing audio `fileRef`s, missing playback-mode tooltips, no-op lock/settings buttons, and missing genre-field styling.
+  - Implemented the minimum reader, BGM, style, and test-environment changes needed to pass.
+- Implementation:
+  - Added `readTxtFile` with strict UTF-8 first and GB18030 fallback, then wired TXT import through it.
+  - Registered seven demo BGM files under `frontend/public/bgm/`.
+  - Added list/repeat-one playback mode and hover hints for the mode toggle.
+  - Removed unexplained no-op settings/lock buttons from the reader/BGM UI.
+  - Restyled the BGM recommendation genre selector to match the heavier rounded control in the current UI direction.
+  - Updated README, SPEC, PLAN, and `.gitignore` for the current MVP behavior and submission hygiene.
+- Verification:
+  - `cd frontend && npm run test -- BgmDock.test.tsx`: 13 tests passed.
+  - `cd frontend && npm run test`: 12 test files passed, 58 tests passed.
+  - `cd frontend && npm run build`: passed.
+- Commit: pending user review.
+
 ## 2026-08-11
 
 ### Task 11: Submission Readiness Docs And GitLab CI Baseline

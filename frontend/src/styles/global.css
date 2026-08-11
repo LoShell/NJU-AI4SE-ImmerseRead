@@ -826,6 +826,43 @@ button:disabled {
   gap: 10px;
 }
 
+.bgm-genre-field {
+  display: grid;
+  grid-template-columns: auto minmax(132px, 1fr);
+  align-items: center;
+  gap: 14px;
+  color: #2f3f34;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.bgm-genre-select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 42px 0 16px;
+  border: 1px solid rgba(56, 66, 56, 0.18);
+  border-radius: 10px;
+  color: #26362c;
+  background:
+    linear-gradient(45deg, transparent 50%, #405247 50%) calc(100% - 22px) 18px / 8px 8px no-repeat,
+    linear-gradient(135deg, #405247 50%, transparent 50%) calc(100% - 14px) 18px / 8px 8px no-repeat,
+    rgba(255, 255, 255, 0.78);
+  box-shadow: 0 8px 20px rgba(54, 42, 24, 0.08);
+  font-size: 18px;
+  font-weight: 500;
+  appearance: none;
+}
+
+.bgm-genre-select:hover {
+  border-color: rgba(48, 121, 80, 0.34);
+  background-color: rgba(247, 252, 247, 0.92);
+}
+
+.bgm-genre-select:focus {
+  outline: 2px solid rgba(47, 121, 82, 0.22);
+  outline-offset: 2px;
+}
+
 .annotation-item,
 .bgm-recommendation {
   gap: 10px;

@@ -81,6 +81,8 @@ describe("BgmDock", () => {
     expect(screen.getByText("氛围推荐")).toBeInTheDocument();
     expect(screen.getByText("我的曲库")).toBeInTheDocument();
     expect(screen.getByText("添加本地音频")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "锁定当前曲" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "解除锁定当前曲" })).not.toBeInTheDocument();
   });
 
   it("disables player controls until a playable uploaded track is selected", () => {
@@ -164,6 +166,51 @@ describe("BgmDock", () => {
     expect(onConfirmSwitch).toHaveBeenCalledWith("local-wind");
   });
 
+  it("keeps the current track when repeat-one mode is enabled", () => {
+    const onConfirmSwitch = vi.fn();
+
+    renderDock({
+      tracks: twoUploadedTracks,
+      currentTrackId: "local-rain",
+      playbackMode: "repeat-one",
+      onConfirmSwitch
+    } as Partial<ComponentProps<typeof BgmDock>>);
+
+    const audio = screen.getByLabelText("本地音频播放器");
+    expect(audio).toHaveAttribute("loop");
+
+    fireEvent.ended(audio);
+
+    expect(onConfirmSwitch).not.toHaveBeenCalled();
+  });
+
+  it("lets the reader switch between list and repeat-one playback", () => {
+    const onPlaybackModeChange = vi.fn();
+
+    renderDock({
+      playbackMode: "list",
+      onPlaybackModeChange
+    } as Partial<ComponentProps<typeof BgmDock>>);
+
+    const playbackModeButton = screen.getByRole("button", { name: "切换为单曲循环" });
+    expect(playbackModeButton).toHaveAttribute("title", "当前：列表循环。点击切换为单曲循环。");
+
+    fireEvent.click(playbackModeButton);
+
+    expect(onPlaybackModeChange).toHaveBeenCalledWith("repeat-one");
+  });
+
+  it("explains repeat-one mode on hover", () => {
+    renderDock({
+      playbackMode: "repeat-one"
+    } as Partial<ComponentProps<typeof BgmDock>>);
+
+    expect(screen.getByRole("button", { name: "切换为列表播放" })).toHaveAttribute(
+      "title",
+      "当前：单曲循环。点击切换为列表循环。"
+    );
+  });
+
   it("requires confirmation before switching to a recommended track", () => {
     const onConfirmSwitch = vi.fn();
 
@@ -175,6 +222,22 @@ describe("BgmDock", () => {
     fireEvent.click(screen.getByRole("button", { name: "确认切换" }));
 
     expect(onConfirmSwitch).toHaveBeenCalledWith("night-suspense");
+  });
+
+  it("lets the reader choose a book genre before analyzing recommendations", () => {
+    const onBookGenreChange = vi.fn();
+
+    renderDock({
+      bookGenre: "通用",
+      onBookGenreChange
+    } as Partial<ComponentProps<typeof BgmDock>>);
+
+    const genreSelect = screen.getByLabelText("作品题材");
+    expect(genreSelect.closest(".bgm-genre-field")).toBeInTheDocument();
+
+    fireEvent.change(genreSelect, { target: { value: "悬疑" } });
+
+    expect(onBookGenreChange).toHaveBeenCalledWith("悬疑");
   });
 
   it("submits local audio metadata without uploading the audio to the backend", () => {

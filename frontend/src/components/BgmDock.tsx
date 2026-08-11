@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import type { BgmRecommendation, BgmSource, BgmTrack, Tempo } from "../bgm/bgmTypes";
+import type { BgmComplexity, BgmPlaybackMode, BgmRecommendation, BgmSource, BgmTrack, Tempo } from "../bgm/bgmTypes";
 import defaultBgmCover from "../assets/default-bgm-cover.png";
 import { Icon } from "./Icon";
 
@@ -7,12 +7,14 @@ export interface UploadedBgmInput {
   file: File;
   title: string;
   source: BgmSource;
+  genres: string[];
   moods: string[];
   scenes: string[];
   energy: number;
   darkness: number;
   warmth: number;
   tempo: Tempo;
+  complexity: BgmComplexity;
 }
 
 export interface BgmDockProps {
@@ -20,11 +22,15 @@ export interface BgmDockProps {
   recommendations: BgmRecommendation[];
   currentTrackId?: string;
   lockedTrackId?: string;
+  bookGenre?: string;
+  playbackMode?: BgmPlaybackMode;
   isPlaying: boolean;
   isAnalyzing: boolean;
   onAnalyze: () => void;
+  onBookGenreChange?: (genre: string) => void;
   onConfirmSwitch: (trackId: string) => void;
   onDeleteTrack: (trackId: string) => void;
+  onPlaybackModeChange?: (mode: BgmPlaybackMode) => void;
   onTogglePlay: () => void;
   onToggleLock: () => void;
   onUploadTrack: (track: UploadedBgmInput) => void;
@@ -50,14 +56,18 @@ export function BgmDock({
   recommendations,
   currentTrackId,
   lockedTrackId,
+  playbackMode = "list",
   isPlaying,
   isAnalyzing,
   onAnalyze,
   onConfirmSwitch,
   onDeleteTrack,
+  onPlaybackModeChange,
   onTogglePlay,
   onToggleLock,
   onUploadTrack,
+  bookGenre = "通用",
+  onBookGenreChange,
   showPlayer = true,
   showRecommendations = true,
   showLibrary = true,
@@ -66,12 +76,14 @@ export function BgmDock({
   const [pendingTrackId, setPendingTrackId] = useState<string>();
   const [file, setFile] = useState<File>();
   const [title, setTitle] = useState("");
+  const [genres, setGenres] = useState("");
   const [moods, setMoods] = useState("");
   const [scenes, setScenes] = useState("");
   const [energy, setEnergy] = useState(0.4);
   const [darkness, setDarkness] = useState(0.4);
   const [warmth, setWarmth] = useState(0.4);
   const [tempo, setTempo] = useState<Tempo>("medium");
+  const [complexity, setComplexity] = useState<BgmComplexity>("ambient");
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const currentTrack = useMemo(
@@ -85,6 +97,9 @@ export function BgmDock({
     [pendingTrackId, tracks]
   );
   const canSkipTrack = Boolean(playableCurrentTrack) && playableTracks.length > 1;
+  const nextPlaybackMode: BgmPlaybackMode = playbackMode === "list" ? "repeat-one" : "list";
+  const playbackModeTitle =
+    playbackMode === "list" ? "当前：列表循环。点击切换为单曲循环。" : "当前：单曲循环。点击切换为列表循环。";
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -119,6 +134,14 @@ export function BgmDock({
     onConfirmSwitch(playableTracks[nextIndex].id);
   }
 
+  function handleAudioEnded() {
+    if (playbackMode === "repeat-one") {
+      return;
+    }
+
+    switchByOffset(1);
+  }
+
   function submitUpload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!file) {
@@ -130,21 +153,25 @@ export function BgmDock({
       file,
       title: trimmedTitle,
       source: "user-uploaded",
+      genres: splitTags(genres),
       moods: splitTags(moods),
       scenes: splitTags(scenes),
       energy,
       darkness,
       warmth,
-      tempo
+      tempo,
+      complexity
     });
     setFile(undefined);
     setTitle("");
+    setGenres("");
     setMoods("");
     setScenes("");
     setEnergy(0.4);
     setDarkness(0.4);
     setWarmth(0.4);
     setTempo("medium");
+    setComplexity("ambient");
     event.currentTarget.reset();
   }
 
@@ -171,12 +198,12 @@ export function BgmDock({
               </button>
               <button
                 className="icon-button"
-                aria-label={lockedTrackId ? "解除锁定当前曲" : "锁定当前曲"}
+                aria-label={playbackMode === "list" ? "切换为单曲循环" : "切换为列表播放"}
+                title={playbackModeTitle}
                 type="button"
-                onClick={onToggleLock}
-                disabled={!playableCurrentTrack}
+                onClick={() => onPlaybackModeChange?.(nextPlaybackMode)}
               >
-                <Icon name="settings" />
+                <Icon name="music" />
               </button>
             </div>
             {playableCurrentTrack?.fileRef && (
@@ -185,7 +212,8 @@ export function BgmDock({
                 className="bgm-audio"
                 ref={audioRef}
                 src={playableCurrentTrack.fileRef}
-                onEnded={() => switchByOffset(1)}
+                loop={playbackMode === "repeat-one"}
+                onEnded={handleAudioEnded}
               />
             )}
           </div>
@@ -202,6 +230,26 @@ export function BgmDock({
             <Icon name="chevron" />
           </summary>
           <div className="section-body bgm-recommendations">
+            <label className="bgm-genre-field">
+              作品题材
+              <select
+                className="bgm-genre-select"
+                aria-label="作品题材"
+                value={bookGenre}
+                onChange={(event) => onBookGenreChange?.(event.target.value)}
+              >
+                <option value="通用">通用</option>
+                <option value="古言">古言</option>
+                <option value="仙侠">仙侠</option>
+                <option value="悬疑">悬疑</option>
+                <option value="都市">都市</option>
+                <option value="职场">职场</option>
+                <option value="校园">校园</option>
+                <option value="甜宠">甜宠</option>
+                <option value="科幻">科幻</option>
+                <option value="末世">末世</option>
+              </select>
+            </label>
             <button className="button-primary" type="button" onClick={onAnalyze} disabled={isAnalyzing}>
               <Icon name="settings" />
               {isAnalyzing ? "分析中..." : "分析当前氛围"}
@@ -311,6 +359,10 @@ export function BgmDock({
               <input aria-label="曲名" value={title} onChange={(event) => setTitle(event.target.value)} />
             </label>
             <label>
+              题材标签
+              <input aria-label="题材标签" value={genres} onChange={(event) => setGenres(event.target.value)} />
+            </label>
+            <label>
               情绪标签
               <input aria-label="情绪标签" value={moods} onChange={(event) => setMoods(event.target.value)} />
             </label>
@@ -362,6 +414,19 @@ export function BgmDock({
                 <option value="slow">慢</option>
                 <option value="medium">中</option>
                 <option value="fast">快</option>
+              </select>
+            </label>
+            <label>
+              曲目复杂度
+              <select
+                aria-label="曲目复杂度"
+                value={complexity}
+                onChange={(event) => setComplexity(event.target.value as BgmComplexity)}
+              >
+                <option value="minimal">极简</option>
+                <option value="ambient">环境</option>
+                <option value="layered">层次</option>
+                <option value="cinematic">电影感</option>
               </select>
             </label>
             <button className="button-primary" type="submit" disabled={!file}>

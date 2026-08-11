@@ -1,5 +1,7 @@
 export type Tempo = "slow" | "medium" | "fast";
 export type BgmSource = "built-in" | "user-uploaded";
+export type BgmComplexity = "minimal" | "ambient" | "layered" | "cinematic";
+export type BgmPlaybackMode = "list" | "repeat-one";
 
 export interface BgmTrack {
   id: string;
@@ -7,12 +9,14 @@ export interface BgmTrack {
   source: BgmSource;
   fileRef?: string;
   audioBlob?: Blob;
+  genres?: string[];
   moods: string[];
   scenes: string[];
   energy: number;
   darkness: number;
   warmth: number;
   tempo: Tempo;
+  complexity?: BgmComplexity;
   licenseNote?: string;
   createdAt: string;
 }
@@ -34,6 +38,7 @@ export interface AtmosphereProfile {
 
 export interface RecommendOptions {
   lockedTrackId?: string;
+  bookGenre?: string;
 }
 
 export interface BgmRecommendation {

@@ -49,13 +49,18 @@
   - Implementation: pending commit by Codex main conversation, no subagent.
   - Scope: root `.gitlab-ci.yml` with required `unit-test` job, README run/key/CI notes, and SPEC alignment for current MVP distribution and credential behavior.
   - Verification: `cd frontend && npm run test`, `cd frontend && npm run build`, and `cd backend && .\mvnw.cmd test` passed locally on 2026-08-11. Docker and remote GitLab CI must be verified by the user in the target environment.
+- [x] Task 12: Frontend MVP polish and local demo assets
+  - Implementation: pending commit by Codex main conversation, no subagent.
+  - Scope: GB18030 TXT decoding fallback, seven system demo BGM file references, list/repeat-one playback mode, BGM recommendation genre selector polish, removal of no-op settings/lock buttons, `.gitignore` credential hardening, and documentation alignment.
+  - Verification: `cd frontend && npm run test -- BgmDock.test.tsx`, `cd frontend && npm run test`, and `cd frontend && npm run build` passed locally on 2026-08-12.
 
 ## Global Constraints
 
 ### Implemented Refinements
 
-- BGM recommendation switches still require reader confirmation. Normal player controls now support previous/next within the playable local/system-audio queue, and an ended local audio element advances to the next playable track.
-- Built-in BGM metadata lives in `frontend/src/bgm/builtInTracks.ts`. Demo audio, if used, should be placed under `frontend/public/bgm/` and referenced by `fileRef: "/bgm/<file>"`.
+- BGM recommendation switches still require reader confirmation. Normal player controls now support previous/next, list looping, and repeat-one mode within the playable local/system-audio queue.
+- Built-in BGM metadata lives in `frontend/src/bgm/builtInTracks.ts`. Demo audio should be placed under `frontend/public/bgm/` and referenced by `fileRef: "/bgm/<file>"`.
+- TXT reading now uses strict UTF-8 first and falls back to GB18030 for common GBK/GB2312 web-novel files.
 - Chapter progress is derived from the central reader scroll container. Full-book progress is recalculated from the active segment offset plus the current intra-chapter scroll offset.
 - Night mode is exposed as a separate reader toolbar button after the theme control.
 
@@ -67,7 +72,7 @@
 - 书搭子默认严格防剧透，LLM 请求不得包含当前阅读位置之后的正文。
 - 书搭子默认回复较短，通常为 1-4 句。
 - LLM 调用是用户动作或单次分析触发，不做自主 agent 循环或 LLM 工具调用。
-- BGM 切换需要用户确认，第一版不自动切歌。
+- BGM 推荐切换需要用户确认；播放器队列内的上一首、下一首和列表循环属于普通播放控制。
 - 前端参考 Open Design，阅读器界面保持安静、沉浸、内容优先。
 - 每个开发任务必须先写测试，再实现，再运行对应测试。
 - 每个任务完成后单独提交。

@@ -33,6 +33,7 @@ describe("App", () => {
     expect(screen.getByText("导入 TXT 后开始阅读。")).toBeInTheDocument();
     expect(document.querySelector(".panel-toggle")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "字体" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "章节设置" })).not.toBeInTheDocument();
   });
 
   it("keeps the BGM player docked in the right panel outside the active tab", () => {
@@ -106,17 +107,18 @@ describe("App", () => {
     getSelection.mockRestore();
   });
 
-  it("uses the BGM tab for the song library instead of duplicating the player", () => {
+  it("uses the BGM tab for recommendations and the song library instead of duplicating the player", () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole("button", { name: /BGM/ }));
 
     const sidePanel = screen.getByRole("complementary", { name: "阅读陪伴面板" });
     const libraryPanel = within(sidePanel).getByLabelText("BGM 曲库面板");
+    expect(within(libraryPanel).getByText("氛围推荐")).toBeInTheDocument();
+    expect(within(libraryPanel).getByRole("button", { name: /分析当前氛围/ })).toBeInTheDocument();
     expect(within(libraryPanel).getByText("我的曲库")).toBeInTheDocument();
     expect(within(libraryPanel).getByText("添加本地音频")).toBeInTheDocument();
     expect(within(libraryPanel).queryByAltText("默认 BGM 封面")).not.toBeInTheDocument();
-    expect(within(libraryPanel).queryByRole("button", { name: /分析当前氛围/ })).not.toBeInTheDocument();
   });
 
   it("updates the chapter progress from the central reader scroll position", async () => {

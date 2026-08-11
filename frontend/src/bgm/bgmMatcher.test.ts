@@ -20,12 +20,14 @@ const makeTrack = (overrides: Partial<BgmTrack>): BgmTrack => ({
   title: overrides.title ?? "Track",
   source: overrides.source ?? "built-in",
   fileRef: overrides.fileRef,
+  genres: (overrides as Partial<BgmTrack> & { genres?: string[] }).genres ?? [],
   moods: overrides.moods ?? [],
   scenes: overrides.scenes ?? [],
   energy: overrides.energy ?? 0,
   darkness: overrides.darkness ?? 0,
   warmth: overrides.warmth ?? 0,
   tempo: overrides.tempo ?? "medium",
+  complexity: (overrides as Partial<BgmTrack> & { complexity?: string }).complexity ?? "ambient",
   licenseNote: overrides.licenseNote,
   createdAt: overrides.createdAt ?? "2026-08-07T00:00:00.000Z"
 });
@@ -67,8 +69,7 @@ describe("recommendBgm", () => {
 
     expect(recommendations.map((recommendation) => recommendation.trackId)).toEqual([
       "more-tags-but-distant",
-      "numeric-close",
-      "scene-only"
+      "numeric-close"
     ]);
     expect(recommendations[0]).toMatchObject({
       title: "标签更多但数值偏远"
@@ -87,7 +88,45 @@ describe("recommendBgm", () => {
     expect(recommendations).toEqual([]);
   });
 
-  it("returns at most three positive-score recommendations", () => {
+  it("prioritizes book genre over a momentary mood-only match", () => {
+    const recommendations = recommendBgm(
+      baseProfile,
+      [
+        makeTrack({
+          id: "romance-mood",
+          title: "恋爱甜歌",
+          genres: ["甜宠"],
+          moods: ["悬疑", "孤独"],
+          scenes: ["夜晚", "走廊"],
+          energy: 0.4,
+          darkness: 0.8,
+          warmth: 0.2,
+          tempo: "slow",
+          complexity: "ambient"
+        } as Partial<BgmTrack>),
+        makeTrack({
+          id: "suspense-theme",
+          title: "悬疑底色",
+          genres: ["悬疑"],
+          moods: ["紧张"],
+          scenes: ["谜团"],
+          energy: 0.5,
+          darkness: 0.7,
+          warmth: 0.2,
+          tempo: "slow",
+          complexity: "layered"
+        } as Partial<BgmTrack>)
+      ],
+      { bookGenre: "悬疑" } as never
+    );
+
+    expect(recommendations[0]).toMatchObject({
+      trackId: "suspense-theme",
+      reason: expect.stringContaining("题材：悬疑")
+    });
+  });
+
+  it("returns at most two positive-score recommendations", () => {
     const recommendations = recommendBgm(baseProfile, [
       makeTrack({ id: "first", title: "First", moods: ["悬疑"], tempo: "slow", energy: 0.4, darkness: 0.8, warmth: 0.2 }),
       makeTrack({ id: "second", title: "Second", moods: ["孤独"], tempo: "slow", energy: 0.4, darkness: 0.8, warmth: 0.2 }),
@@ -95,7 +134,7 @@ describe("recommendBgm", () => {
       makeTrack({ id: "fourth", title: "Fourth", scenes: ["走廊"], tempo: "slow", energy: 0.4, darkness: 0.8, warmth: 0.2 })
     ]);
 
-    expect(recommendations).toHaveLength(3);
+    expect(recommendations).toHaveLength(2);
     expect(recommendations.every((recommendation) => recommendation.score > 0)).toBe(true);
   });
 
