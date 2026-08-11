@@ -42,19 +42,19 @@
 ### Current Main-Conversation Frontend Polish
 
 - [x] Task 10: Reader polish for BGM queue, real progress, and night mode
-  - Implementation: pending commit by Codex main conversation, no subagent.
+  - Implementation: `2dbb545` (`前端体验良好，初版告成`) by Codex main conversation, no subagent.
   - Scope: playable BGM previous/next and ended-to-next behavior, scroll-derived chapter/book progress, night reading mode, and documentation updates.
   - Verification: `cd frontend && npm run test -- App.test.tsx BgmDock.test.tsx` passed locally on 2026-08-11.
 - [x] Task 11: Submission readiness docs and GitLab CI baseline
-  - Implementation: pending commit by Codex main conversation, no subagent.
+  - Implementation: `8197f6c` (`chore: add ci and submission docs`) by Codex main conversation, no subagent.
   - Scope: root `.gitlab-ci.yml` with required `unit-test` job, README run/key/CI notes, and SPEC alignment for current MVP distribution and credential behavior.
   - Verification: `cd frontend && npm run test`, `cd frontend && npm run build`, and `cd backend && .\mvnw.cmd test` passed locally on 2026-08-11. Docker and remote GitLab CI must be verified by the user in the target environment.
 - [x] Task 12: Frontend MVP polish and local demo assets
-  - Implementation: pending commit by Codex main conversation, no subagent.
+  - Implementation: `8598026` (`feat: 完善阅读器 BGM 与 TXT 导入体验`) by Codex main conversation, no subagent.
   - Scope: GB18030 TXT decoding fallback, seven system demo BGM file references, list/repeat-one playback mode, BGM recommendation genre selector polish, removal of no-op settings/lock buttons, `.gitignore` credential hardening, and documentation alignment.
   - Verification: `cd frontend && npm run test -- BgmDock.test.tsx`, `cd frontend && npm run test`, and `cd frontend && npm run build` passed locally on 2026-08-12.
 - [x] Task 13: Docker Compose distribution setup
-  - Implementation: pending commit by Codex main conversation, no subagent.
+  - Implementation: `40dcf6a` (`添加 Docker Compose 分发配置`) by Codex main conversation, no subagent.
   - Scope: root `docker-compose.yml`, frontend Nginx image, backend Spring Boot image, Docker ignore files, root `.env.example`, and Docker README notes.
   - Verification: static repository checks, frontend test/build, and backend tests passed in this Windows worktree. User ran `docker compose up --build` in Ubuntu VM on 2026-08-12; `curl http://localhost:8080/api/health`, `curl -I http://localhost:5173`, and `curl -I http://localhost:5173/api/health` returned successful responses.
 
