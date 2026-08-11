@@ -2,6 +2,36 @@
 
 ## 2026-08-12
 
+### Task 13: Docker Compose Distribution Setup
+
+- Executor: Codex main conversation, no subagent.
+- User/environment constraint:
+  - Docker is installed in the user's Ubuntu VM, not in this Windows worktree environment.
+  - This session can prepare configuration and run non-Docker verification, but the user must run the final container startup command in the VM.
+- Key decisions:
+  - Put `docker-compose.yml` at the repository root so the compose context can see both `frontend/` and `backend/`.
+  - Serve the built React app through Nginx and reverse-proxy `/api/` to the backend service.
+  - Build the backend as a Spring Boot jar in a multi-stage Java 17 image.
+  - Keep real keys out of images and source; pass `LLM_*` through the shell environment or root `.env`.
+  - Remove the empty `backend/docker-compose.yml` to avoid a misleading nested compose entry point.
+- Implementation:
+  - Added root `docker-compose.yml` with `frontend` and `backend` services.
+  - Added frontend `Dockerfile`, `.dockerignore`, and `nginx.conf`.
+  - Added backend `Dockerfile` and `.dockerignore`.
+  - Added root `.env.example` and backend Docker README notes.
+  - Updated README and PLAN for Docker startup and VM verification status.
+- Verification:
+  - `cd frontend && npm run test`: 12 test files passed, 58 tests passed.
+  - `cd frontend && npm run build`: passed.
+  - `cd backend && .\mvnw.cmd test`: 14 tests passed.
+  - `docker compose config` could not run in this Windows worktree because Docker is not installed here.
+  - User ran `docker compose up --build` in Ubuntu VM on 2026-08-12; frontend and backend images built, network and containers were created, and both services started.
+  - Ubuntu VM health checks passed:
+    - `curl http://localhost:8080/api/health` returned `{"llmConfigured":false,"status":"ok"}`.
+    - `curl -I http://localhost:5173` returned `HTTP/1.1 200 OK`.
+    - `curl -I http://localhost:5173/api/health` returned `HTTP/1.1 200`, confirming Nginx `/api` reverse proxy to backend.
+- Commit: pending user review.
+
 ### Task 12: Frontend MVP Polish And Local Demo Assets
 
 - Executor: Codex main conversation, no subagent, per user request to keep UI context continuous.
@@ -35,10 +65,10 @@
 - Executor: Codex main conversation, no subagent.
 - User/environment constraint:
   - Docker is installed in the user's Ubuntu VM rather than this Windows worktree environment.
-  - Do not claim Docker distribution is verified from this session.
+  - Docker verification was deferred until the user could run the target VM environment.
 - Key decisions:
   - Add a root GitLab CI baseline now because it can be represented in the repository and checked by the remote runner.
-  - Keep Docker Compose and public deployment as explicit follow-up work until the user verifies the VM/container path.
+  - Keep public deployment as explicit follow-up work. Docker Compose verification is handled in Task 13.
   - Keep the current credential implementation honest: backend environment variables / `.env` fallback are implemented; OS credential manager and platform Secret storage are future hardening paths.
   - Do not create `REFLECTION.md` because the user will write the personal reflection manually.
 - Implementation:
@@ -50,7 +80,7 @@
   - `cd frontend && npm run test`: 10 test files passed, 50 tests passed.
   - `cd frontend && npm run build`: passed.
   - `cd backend && .\mvnw.cmd test`: 14 tests passed, build success.
-  - Docker verification remains deferred to the user's Ubuntu VM.
+  - Docker verification was later completed in the user's Ubuntu VM under Task 13.
 - Commit: pending user review.
 
 ### Task 10: Reader Polish For BGM Queue, Real Progress, And Night Mode

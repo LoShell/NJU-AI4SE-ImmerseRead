@@ -480,7 +480,7 @@ TXT 上传：
 - OpenAI API 或 OpenAI-compatible 接口。
 - 浏览器 File API，用于 TXT 和音频导入。
 - 浏览器 IndexedDB，用于本地持久化。
-- Docker 可作为后续分发验证方式；当前提交优先保证本地前后端启动和 CI 单元测试。
+- Docker Compose 作为当前分发验证方式；本地前后端启动和 CI 单元测试仍作为开发验收路径。
 
 ## 6. 数据模型
 
@@ -636,7 +636,7 @@ LLM_MODEL=deepseek-v4-flash
 目标平台：
 
 - Windows、macOS、Linux 上的本地浏览器。
-- 支持本地 Node.js + Spring Boot 的课程验收环境；Docker 分发待作者在 Ubuntu 虚拟机中验证后补齐。
+- 支持本地 Node.js + Spring Boot 的课程验收环境；Docker Compose 分发已在作者 Ubuntu 虚拟机中验证。
 
 当前可验收启动方式：
 
@@ -652,8 +652,8 @@ cd frontend && npm run dev
 
 后续可选方向：
 
-- 在 Ubuntu 虚拟机中补齐并验证 `docker compose up --build`。
-- 构建为单个 Docker 镜像，由 Spring Boot 托管前端构建产物。
+- 使用根目录 `docker compose up --build` 启动前端 Nginx 服务和后端 Spring Boot 服务。
+- 前端容器通过 Nginx 托管构建产物，并将 `/api/` 反向代理到后端容器。
 - 将容器镜像推送到公开 registry，并在 README 写出 `docker pull` 与 `docker run --env-file .env` 示例。
 - 部署到支持免费额度的平台，提供可访问的 WebUI URL；生产部署仍不保存用户小说正文。
 
@@ -699,8 +699,9 @@ cd frontend && npm run dev
 
 ### 8.8 部署
 
-- 当前提交使用本地前后端分离启动与 GitLab CI 单元验证。
-- Docker Compose 是后续分发目标，需要在作者的 Ubuntu 虚拟机 Docker 环境中验证后再声明为正式交付方式。
+- 当前提交支持本地前后端分离启动、GitLab CI 单元验证和根目录 Docker Compose 分发配置。
+- Docker Compose 使用前端 Nginx 静态服务反代 `/api/` 到后端 Spring Boot 服务；真实 LLM key 通过运行时环境变量或根目录 `.env` 注入，不进入镜像。
+- `docker compose up --build` 已在作者 Ubuntu 虚拟机环境中验证；前端、后端健康检查和 Nginx `/api` 反代均返回成功响应。
 
 ## 9. 验收标准
 

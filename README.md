@@ -26,6 +26,8 @@ NJU-AI4SE-ImmerseRead/
   SPEC_PROCESS.md  Spec/Plan 生成与冷启动验证过程
   AGENT_LOG.md     AI 协作与人工干预日志
   .gitlab-ci.yml   CI 配置，包含 unit-test job
+  docker-compose.yml Docker Compose 分发配置
+  .env.example     Docker/后端环境变量示例，不包含真实 key
 ```
 
 ## 本地启动
@@ -114,6 +116,31 @@ mvn test
 
 CI 会在 `unit-test` job 中执行前端测试、前端构建和后端测试。
 
+## Docker 启动
+
+Docker 配置位于项目根目录，包含前端 Nginx 静态服务和后端 Spring Boot 服务。
+
+首次运行可以复制示例环境文件：
+
+```bash
+cp .env.example .env
+```
+
+然后按需编辑 `.env`，填入自己的 LLM key。没有 key 时，本地 TXT 阅读、批注和 BGM 仍可使用，但书搭子和氛围分析会走未配置/降级路径。
+
+在项目根目录执行：
+
+```bash
+docker compose up --build
+```
+
+启动后访问：
+
+- 前端：`http://localhost:5173`
+- 后端健康检查：`http://localhost:8080/api/health`
+
+如果在虚拟机内运行 Docker，需要确认宿主机到虚拟机的端口转发或网络访问方式。
+
 ## BGM 曲库
 
 系统曲库元数据位于：
@@ -140,7 +167,7 @@ fileRef: "/bgm/example.mp3"
 
 当前仓库提供 `.gitlab-ci.yml`，其中包含作业要求的 `unit-test` job。
 
-Docker 分发仍需在作者的 Ubuntu 虚拟机环境中验证。当前没有声称已经通过 `docker compose up --build` 启动完整系统；在 Docker 验证完成前，推荐使用“本地前端 + 本地后端”的方式验收。
+仓库提供 Docker Compose 分发配置，并已在作者的 Ubuntu 虚拟机中通过 `docker compose up --build` 验证。验证结果记录在 `AGENT_LOG.md`：前端 `http://localhost:5173`、后端 `http://localhost:8080/api/health`、以及前端 Nginx 反代 `http://localhost:5173/api/health` 均返回成功响应。
 
 线上部署暂未启用。若后续提供公网 WebUI，建议将前端部署为静态站，将 Spring Boot 后端部署到支持环境变量密钥配置的平台，并由部署环境注入 `LLM_*`，不要把 key 打包进前端或镜像。
 

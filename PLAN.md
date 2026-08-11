@@ -6,7 +6,7 @@
 
 **Architecture:** 前端使用 React + TypeScript + Vite，负责 TXT 解析、IndexedDB 本地存储、阅读 UI、批注、BGM 播放与防剧透上下文构造。后端使用 Spring Boot，仅作为 LLM 代理、凭据隔离、请求校验、结构化输出规范化和脱敏日志层，不持久化小说正文、批注、聊天记录或音频。
 
-**Tech Stack:** React, TypeScript, Vite, Vitest, React Testing Library, Playwright, IndexedDB, Java 17, Spring Boot 4.1.0, JUnit 5, GitLab CI, OpenAI-compatible Chat Completions API. Docker Compose is a planned distribution target after verification in the author's Ubuntu VM.
+**Tech Stack:** React, TypeScript, Vite, Vitest, React Testing Library, Playwright, IndexedDB, Java 17, Spring Boot 4.1.0, JUnit 5, GitLab CI, Docker Compose, OpenAI-compatible Chat Completions API.
 
 ## Implementation Progress
 
@@ -53,6 +53,10 @@
   - Implementation: pending commit by Codex main conversation, no subagent.
   - Scope: GB18030 TXT decoding fallback, seven system demo BGM file references, list/repeat-one playback mode, BGM recommendation genre selector polish, removal of no-op settings/lock buttons, `.gitignore` credential hardening, and documentation alignment.
   - Verification: `cd frontend && npm run test -- BgmDock.test.tsx`, `cd frontend && npm run test`, and `cd frontend && npm run build` passed locally on 2026-08-12.
+- [x] Task 13: Docker Compose distribution setup
+  - Implementation: pending commit by Codex main conversation, no subagent.
+  - Scope: root `docker-compose.yml`, frontend Nginx image, backend Spring Boot image, Docker ignore files, root `.env.example`, and Docker README notes.
+  - Verification: static repository checks, frontend test/build, and backend tests passed in this Windows worktree. User ran `docker compose up --build` in Ubuntu VM on 2026-08-12; `curl http://localhost:8080/api/health`, `curl -I http://localhost:5173`, and `curl -I http://localhost:5173/api/health` returned successful responses.
 
 ## Global Constraints
 
@@ -61,6 +65,7 @@
 - BGM recommendation switches still require reader confirmation. Normal player controls now support previous/next, list looping, and repeat-one mode within the playable local/system-audio queue.
 - Built-in BGM metadata lives in `frontend/src/bgm/builtInTracks.ts`. Demo audio should be placed under `frontend/public/bgm/` and referenced by `fileRef: "/bgm/<file>"`.
 - TXT reading now uses strict UTF-8 first and falls back to GB18030 for common GBK/GB2312 web-novel files.
+- Docker Compose distribution is configured at the repository root and was verified in the user's Ubuntu VM on 2026-08-12.
 - Chapter progress is derived from the central reader scroll container. Full-book progress is recalculated from the active segment offset plus the current intra-chapter scroll offset.
 - Night mode is exposed as a separate reader toolbar button after the theme control.
 
