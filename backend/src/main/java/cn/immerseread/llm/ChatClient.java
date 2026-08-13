@@ -1,4 +1,6 @@
 package cn.immerseread.llm;
 
-public class ChatClient {
+@FunctionalInterface
+public interface ChatClient {
+    String complete(String apiKey, String prompt);
 }

@@ -2,6 +2,14 @@
 
 日期：2026-08-06
 
+## 0. 当前规格修订
+
+- 阅读器正文区域是唯一主要滚动区，侧栏保持固定；本章进度根据正文滚动位置实时计算，全文进度基于章节起始位置和本章内部进度计算。
+- 阅读设置提供独立夜视模式入口，位于主题按钮之后。
+- BGM 推荐切换仍需要用户确认；播放器的上一首、下一首、列表循环、单曲循环和单曲结束后自动下一首属于当前播放队列行为，按可播放曲目在列表中的顺序执行。
+- 系统 BGM 曲库元数据位于 `frontend/src/bgm/builtInTracks.ts`；demo 音频放入 `frontend/public/bgm/` 并通过 `fileRef` 引用。用户上传音频仍只保存在浏览器本地。
+- TXT 读取优先严格 UTF-8；当 UTF-8 非法时兜底使用 GB18030，以覆盖常见 GBK/GB2312 网文文件。
+
 ## 1. 问题陈述
 
 ImmerseRead 是一个面向小说和网文读者的本地优先沉浸式 TXT 阅读器。它要解决三个真实问题：
@@ -63,7 +71,7 @@ ImmerseRead 是一个面向小说和网文读者的本地优先沉浸式 TXT 阅
 - 上传音频保存在浏览器本地存储中，不发送到后端。
 - 用户可以编辑曲名、情绪标签、场景标签和强度等元数据。
 - 不支持的音频格式会给出清晰错误提示。
-- 播放器支持播放、暂停、切换和锁定当前曲目。
+- 播放器支持播放、暂停、上一首、下一首、列表循环和单曲循环。
 
 ### 用户故事 5：创建轻量批注
 
@@ -107,11 +115,11 @@ ImmerseRead 是一个面向小说和网文读者的本地优先沉浸式 TXT 阅
 输入：
 
 - 用户上传的 `.txt` 文件。
-- 当自动解码失败时，用户手动选择的编码。
+- 用户上传的 `.txt` 文件二进制内容。
 
 行为：
 
-- 解码文本，规范换行，同时保留原始字符顺序。
+- 优先严格 UTF-8 解码；当 UTF-8 非法时兜底 GB18030 解码，规范换行，同时保留原始字符顺序。
 - 使用常见中文和英文标题模式尝试章节识别。
 - 如果识别出的章节数量低于可靠阈值，则按约 3000-5000 个中文字符切成阅读片段，并尽量在段落边界切分。
 - 在浏览器本地存储中创建 `Book`、`Segment` 和初始 `ReadingProgress` 记录。
@@ -130,7 +138,7 @@ ImmerseRead 是一个面向小说和网文读者的本地优先沉浸式 TXT 阅
 
 错误处理：
 
-- 编码识别失败时，让用户选择 UTF-8 或 GBK。
+- UTF-8 与 GB18030 都无法得到可读文本时显示导入失败提示。
 - 空文件直接拒绝，并显示清晰提示。
 - 章节解析失败时，自动回退到固定字数切片。
 
@@ -200,14 +208,15 @@ ImmerseRead 是一个面向小说和网文读者的本地优先沉浸式 TXT 阅
 行为：
 
 - 将用户上传的音频保存在本地。
-- 根据情绪标签重合、场景标签重合，以及 energy、darkness、warmth 数值距离计算匹配分。
-- 推荐 1-3 首 BGM，并给出简短理由。
+- 根据作品题材、情绪标签重合、场景标签重合、曲目复杂度，以及 energy、darkness、warmth 数值距离计算匹配分。
+- 推荐最符合的 1-2 首 BGM，并给出简短理由。
 - 切换曲目前请求用户确认。
 
 输出：
 
 - 排序后的 BGM 推荐结果。
 - 当前播放状态。
+- 当前播放模式：列表循环或单曲循环。
 
 边界条件：
 
@@ -372,11 +381,11 @@ ImmerseRead 是一个面向小说和网文读者的本地优先沉浸式 TXT 阅
 
 凭据生命周期：
 
-- 录入：优先使用后端提供的凭据管理命令以隐藏输入方式录入 key，并写入操作系统凭据管理器；Windows 目标机使用 Windows Credential Manager。容器或 CI 环境可复制 `.env.example` 为 `.env`，填写 `OPENAI_API_KEY`。
-- 查看状态：后端健康检查或凭据管理命令只返回“已配置 / 未配置”，不得回显明文 key。
-- 更新：重新运行凭据录入命令覆盖旧 key；`.env` 模式下修改 `.env` 后重启后端。
-- 清除：运行凭据清除命令删除系统凭据；`.env` 模式下删除 key 后重启后端。清除后 LLM 功能进入禁用状态。
-- 风险说明：系统凭据管理器比 `.env` 更适合个人本机运行；`.env` 是明文 fallback，仅用于开发、Docker Compose 和课程冷启动验证。
+- 录入：当前 MVP 通过后端进程环境变量或本机 `.env` 注入 key，推荐使用 `LLM_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL` 和 `LLM_PROVIDER`。后续可扩展为操作系统凭据管理器或平台 Secret。
+- 查看状态：后端健康检查或 LLM 接口只返回“已配置 / 未配置”类状态，不得回显明文 key。
+- 更新：修改环境变量或 `.env` 后重启后端。
+- 清除：删除环境变量或 `.env` 中的 key 后重启后端。清除后 LLM 功能进入禁用状态。
+- 风险说明：`.env` 是明文 fallback，仅用于开发、课程冷启动验证或本机运行；正式线上部署应使用平台 Secret / 环境变量注入。
 
 ### 4.3 可用性
 
@@ -471,7 +480,7 @@ TXT 上传：
 - OpenAI API 或 OpenAI-compatible 接口。
 - 浏览器 File API，用于 TXT 和音频导入。
 - 浏览器 IndexedDB，用于本地持久化。
-- Docker，用于课程分发与冷启动验证。
+- Docker Compose 作为当前分发验证方式；本地前后端启动和 CI 单元测试仍作为开发验收路径。
 
 ## 6. 数据模型
 
@@ -596,27 +605,30 @@ TXT 上传：
 
 第一版凭据来源按优先级读取：
 
-1. 操作系统凭据管理器中的 `immerseread.openai.api-key`。
-2. 后端环境变量或 `.env` 中的 `OPENAI_API_KEY`。
+1. 后端环境变量或 `.env` 中的 `LLM_API_KEY`。
+2. 兼容旧变量 `OPENAI_API_KEY` 和 `DEEPSEEK_API_KEY`。
+
+操作系统凭据管理器和平台 Secret 属于后续增强方向，不作为当前 MVP 的已实现能力。
 
 前端永远不保存、不接收供应商凭据。后端不得把 key 写入日志、错误响应、聊天记录或任何数据库。
 
 开发和容器 fallback 使用：
 
 ```text
-OPENAI_API_KEY=
-OPENAI_BASE_URL=
-OPENAI_MODEL=
+LLM_PROVIDER=deepseek
+LLM_API_KEY=
+LLM_BASE_URL=https://api.deepseek.com
+LLM_MODEL=deepseek-v4-flash
 ```
 
 `.env` 是明文文件，必须加入 `.gitignore`；README 需要明确说明 `.env` 与进程环境变量的可见性风险。
 
 ### 7.2 凭据录入、查看状态、更新与清除
 
-- 录入：运行后端凭据管理命令，例如 `java -jar backend.jar credentials set`，通过隐藏输入录入 key；开发和 Docker Compose 可使用 `.env`。
-- 查看状态：运行 `java -jar backend.jar credentials status` 或访问健康检查，只显示 configured/unconfigured。
-- 更新：重新运行 `credentials set` 覆盖旧 key；`.env` 模式下修改 `.env` 后重启服务。
-- 清除：运行 `java -jar backend.jar credentials clear` 删除系统凭据；`.env` 模式下删除 `.env` 中的 key 后重启服务。
+- 录入：在启动后端前设置 `LLM_API_KEY` 等环境变量；本机开发可复制 `.env.example` 为 `.env` 并填写 key。
+- 查看状态：访问健康检查或 LLM 功能入口时，只显示 configured/unconfigured 类状态。
+- 更新：修改环境变量或 `.env` 后重启服务。
+- 清除：删除环境变量或 `.env` 中的 key 后重启服务。
 - 降级：没有 key 时，阅读、批注、本地 BGM 仍可用，LLM 功能显示“尚未配置”。
 
 ### 7.3 分发形态
@@ -624,12 +636,13 @@ OPENAI_MODEL=
 目标平台：
 
 - Windows、macOS、Linux 上的本地浏览器。
-- 支持 Docker 的课程验收环境。
+- 支持本地 Node.js + Spring Boot 的课程验收环境；Docker Compose 分发已在作者 Ubuntu 虚拟机中验证。
 
-第一版分发命令：
+当前可验收启动方式：
 
 ```text
-docker compose up --build
+cd backend && mvn spring-boot:run
+cd frontend && npm run dev
 ```
 
 预期服务：
@@ -639,7 +652,8 @@ docker compose up --build
 
 后续可选方向：
 
-- 构建为单个 Docker 镜像，由 Spring Boot 托管前端构建产物。
+- 使用根目录 `docker compose up --build` 启动前端 Nginx 服务和后端 Spring Boot 服务。
+- 前端容器通过 Nginx 托管构建产物，并将 `/api/` 反向代理到后端容器。
 - 将容器镜像推送到公开 registry，并在 README 写出 `docker pull` 与 `docker run --env-file .env` 示例。
 - 部署到支持免费额度的平台，提供可访问的 WebUI URL；生产部署仍不保存用户小说正文。
 
@@ -673,7 +687,7 @@ docker compose up --build
 
 ### 8.6 LLM 供应商
 
-- 默认使用 OpenAI API，并通过 `OPENAI_BASE_URL` 保留接入 OpenAI-compatible 服务的可能。
+- 默认通过通用 `LLM_*` 环境变量配置供应商，支持 OpenAI Responses API 和 DeepSeek Chat Completions；保留 `OPENAI_*` 兼容旧配置。
 - 理由：聊天和结构化输出能力稳定；后端适配器可以隔离供应商细节。
 
 ### 8.7 测试
@@ -685,8 +699,9 @@ docker compose up --build
 
 ### 8.8 部署
 
-- 第一版使用 Docker Compose。
-- 理由：便于课程冷启动验证，也能清楚分离前端和后端服务。
+- 当前提交支持本地前后端分离启动、GitLab CI 单元验证和根目录 Docker Compose 分发配置。
+- Docker Compose 使用前端 Nginx 静态服务反代 `/api/` 到后端 Spring Boot 服务；真实 LLM key 通过运行时环境变量或根目录 `.env` 注入，不进入镜像。
+- `docker compose up --build` 已在作者 Ubuntu 虚拟机环境中验证；前端、后端健康检查和 Nginx `/api` 反代均返回成功响应。
 
 ## 9. 验收标准
 
@@ -709,6 +724,7 @@ docker compose up --build
 - 应用包含至少一组内置免版权或自制演示 BGM。
 - 用户可以上传本地音频并编辑元数据。
 - 当前片段氛围可以生成排序后的 BGM 推荐。
+- 播放器支持列表循环和单曲循环，并在悬停时提示当前模式。
 - 除非用户手动选择，否则切换曲目前需要确认。
 
 ### 9.4 批注
@@ -739,8 +755,8 @@ docker compose up --build
 
 ### 9.8 分发与测试
 
-- `docker compose up --build` 可以启动前端和后端。
-- 有一条命令可以运行前后端测试。
+- 本地命令可以启动前端和后端。
+- CI 中的 `unit-test` job 可以运行前端测试、前端构建和后端测试。
 - CI 覆盖解析器、防剧透模块、BGM 推荐器、LLM adapter 和后端请求校验。
 
 ## 10. 明确不做的内容
