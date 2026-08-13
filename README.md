@@ -30,34 +30,99 @@ NJU-AI4SE-ImmerseRead/
   .env.example     Docker/后端环境变量示例，不包含真实 key
 ```
 
-## 本地启动
+## 快速启动
 
-### 1. 前端
+推荐先启动后端，再启动前端。前端开发服务器已经配置 `/api` 代理，因此浏览器只需要访问前端地址即可。
+
+### 1. 安装依赖
 
 ```powershell
 cd frontend
 npm install
+cd ../backend
+.\mvnw.cmd -v
+```
+
+macOS / Linux：
+
+```bash
+cd frontend
+npm install
+cd ../backend
+./mvnw -v
+```
+
+### 2. 启动后端
+
+Windows PowerShell：
+
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run
+```
+
+macOS / Linux：
+
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+后端默认监听 `http://localhost:8080`。可用下面的命令确认健康状态：
+
+```powershell
+Invoke-RestMethod http://localhost:8080/api/health
+```
+
+macOS / Linux：
+
+```bash
+curl http://localhost:8080/api/health
+```
+
+### 3. 启动前端
+
+另开一个终端：
+
+```powershell
+cd frontend
 npm run dev
 ```
 
 默认 Vite 地址通常是 `http://localhost:5173`。开发代理已配置：前端请求 `/api/**` 会转发到 `http://localhost:8080`。
 
-### 2. 后端
+### 4. 最小冷启动顺序
 
 ```powershell
 cd backend
+
+# 设置api key,以模型deepseek v4 flash为例
+$env:LLM_PROVIDER="deepseek"
+$env:LLM_API_KEY="你的 DeepSeek key"
+$env:LLM_BASE_URL="https://api.deepseek.com"
+$env:LLM_MODEL="deepseek-v4-flash"
+
 mvn spring-boot:run
+
+# 另开终端
+cd frontend
+npm install
+npm run dev
 ```
 
-后端默认监听 `http://localhost:8080`。
+打开 `http://localhost:5173`，上传本地 `.txt` 文件即可开始阅读。没有 LLM key 时，TXT 阅读、批注和 BGM 仍可使用；书搭子和氛围分析会显示未配置或降级结果。
 
 ## LLM Key 配置
 
-测试者使用自己的 key，在目标机器上通过环境变量或 `.env` 注入。
+测试者使用自己的 key，在目标机器上通过环境变量或 `.env` 注入。**不要把真实 key 写入代码或提交到仓库。**
 
 当前 MVP 使用环境变量 / `.env` 作为凭据来源。`.env` 是明文 fallback，适合本地开发；它不如操作系统凭据管理器安全，且可能被有本机权限的用户读取。
 
-### DeepSeek 示例
+### 方式 A：Windows PowerShell 临时环境变量
+
+只对当前 PowerShell 窗口有效，关掉窗口后失效。
+
+DeepSeek：
 
 ```powershell
 $env:LLM_PROVIDER="deepseek"
@@ -66,10 +131,10 @@ $env:LLM_BASE_URL="https://api.deepseek.com"
 $env:LLM_MODEL="deepseek-chat"
 
 cd backend
-mvn spring-boot:run
+.\mvnw.cmd spring-boot:run
 ```
 
-### OpenAI 示例
+OpenAI：
 
 ```powershell
 $env:LLM_PROVIDER="openai"
@@ -78,7 +143,58 @@ $env:LLM_BASE_URL="https://api.openai.com/v1/responses"
 $env:LLM_MODEL="gpt-4.1-mini"
 
 cd backend
-mvn spring-boot:run
+.\mvnw.cmd spring-boot:run
+```
+
+### 方式 B：macOS / Linux 临时环境变量
+
+DeepSeek：
+
+```bash
+export LLM_PROVIDER=deepseek
+export LLM_API_KEY="你的 DeepSeek key"
+export LLM_BASE_URL=https://api.deepseek.com
+export LLM_MODEL=deepseek-chat
+
+cd backend
+./mvnw spring-boot:run
+```
+
+OpenAI：
+
+```bash
+export LLM_PROVIDER=openai
+export LLM_API_KEY="你的 OpenAI key"
+export LLM_BASE_URL=https://api.openai.com/v1/responses
+export LLM_MODEL=gpt-4.1-mini
+
+cd backend
+./mvnw spring-boot:run
+```
+
+### 方式 C：根目录 `.env`
+
+适合 Docker Compose 或本地开发复用配置。注意 `.env` 是明文文件，只能放自己的测试 key，不能提交。
+
+```powershell
+Copy-Item .env.example .env
+notepad .env
+```
+
+macOS / Linux：
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+示例内容：
+
+```text
+LLM_PROVIDER=deepseek
+LLM_API_KEY=你的 DeepSeek key
+LLM_BASE_URL=https://api.deepseek.com
+LLM_MODEL=deepseek-chat
 ```
 
 ### 兼容变量
@@ -98,6 +214,8 @@ mvn spring-boot:run
 - `DEEPSEEK_API_KEY`
 
 ## 验证
+
+本地验证建议按下面顺序执行。前端和后端测试互不依赖真实 LLM key。
 
 前端：
 
