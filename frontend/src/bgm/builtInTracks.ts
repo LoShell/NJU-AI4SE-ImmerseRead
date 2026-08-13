@@ -25,7 +25,7 @@ export const builtInTracks: BgmTrack[] = [
     source: "built-in",
     fileRef: "/bgm/爱的供养.mp3",
     genres: ["古言", "大结局", "海晏河清"],
-    moods: ["释然", "天下太平", "皆大欢喜"],
+    moods: ["释然", "天下太平"],
     scenes: ["大结局", "古风", "皆大欢喜"],
     energy: 0.9,
     darkness: 0.5,
