@@ -1,73 +1,73 @@
-# ImmerseRead Implementation Plan
+# ImmerseRead 实现计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **给智能体执行者：** 必须使用 `superpowers:subagent-driven-development`（推荐）或 `superpowers:executing-plans`，按任务逐步执行本计划。步骤使用复选框（`- [ ]`）语法跟踪。
 
-**Goal:** 构建一个本地优先的沉浸式 TXT 小说阅读器，支持章节解析、滚动阅读、轻量批注、BGM 推荐、Spring Boot LLM 代理和严格防剧透的“书搭子”聊天。
+**目标：** 构建一个本地优先的沉浸式 TXT 小说阅读器，支持章节解析、滚动阅读、轻量批注、BGM 推荐、Spring Boot LLM 代理和严格防剧透的“书搭子”聊天。
 
-**Architecture:** 前端使用 React + TypeScript + Vite，负责 TXT 解析、IndexedDB 本地存储、阅读 UI、批注、BGM 播放与防剧透上下文构造。后端使用 Spring Boot，仅作为 LLM 代理、凭据隔离、请求校验、结构化输出规范化和脱敏日志层，不持久化小说正文、批注、聊天记录或音频。
+**架构：** 前端使用 React + TypeScript + Vite，负责 TXT 解析、IndexedDB 本地存储、阅读 UI、批注、BGM 播放与防剧透上下文构造。后端使用 Spring Boot，仅作为 LLM 代理、凭据隔离、请求校验、结构化输出规范化和脱敏日志层，不持久化小说正文、批注、聊天记录或音频。
 
-**Tech Stack:** React, TypeScript, Vite, Vitest, React Testing Library, Playwright, IndexedDB, Java 17, Spring Boot 4.1.0, JUnit 5, GitLab CI, Docker Compose, OpenAI-compatible Chat Completions API.
+**技术栈：** React、TypeScript、Vite、Vitest、React Testing Library、Playwright、IndexedDB、Java 17、Spring Boot 4.1.0、JUnit 5、GitLab CI、Docker Compose、OpenAI-compatible Chat Completions API。
 
-## Implementation Progress
+## 实现进度
 
-> This section is updated continuously to satisfy the course requirement that each completed task is marked with its commit hash.
+> 本节持续更新，用于满足课程要求：每个已完成 task 都需要标记对应 commit hash。
 
 - [x] Task 1: 项目脚手架与一键命令
-  - Implementation: `281876b` (`chore: scaffold ImmerseRead app`) by subagent Avicenna.
-  - Environment follow-up: `e8d5d2c` (`chore: prepare local verification tools`) by Codex/user environment repair.
-  - Review follow-up: `c3405ef` (`docs: update scaffold verification notes`) by Codex after subagent review.
-  - Human verification: App smoke test passed locally on 2026-08-07.
+  - 实现：`281876b` (`chore: scaffold ImmerseRead app`)，由子智能体 Avicenna 完成。
+  - 环境修复：`e8d5d2c` (`chore: prepare local verification tools`)，由 Codex/用户环境修复完成。
+  - 评审修复：`c3405ef` (`docs: update scaffold verification notes`)，由 Codex 在子智能体评审后完成。
+  - 人工验证：App smoke test 于 2026-08-07 在本地通过。
 - [x] Task 2: 领域模型与 TXT 解析器
-  - Implementation: `fd186e1` (`feat: parse txt books into readable segments`) by subagent Einstein.
-  - Human/Codex fix: `14a0553` (`fix: restore readable txt parser fixtures`) restored readable Chinese fixtures and parser patterns.
-  - Review: subagent Hypatia returned `NO_BLOCKING_FINDINGS`.
-  - Human verification: `txtParser.test.ts` passed locally on 2026-08-07.
+  - 实现：`fd186e1` (`feat: parse txt books into readable segments`)，由子智能体 Einstein 完成。
+  - 人工/Codex 修复：`14a0553` (`fix: restore readable txt parser fixtures`) 恢复可读中文 fixture 与解析规则。
+  - 评审：子智能体 Hypatia 返回 `NO_BLOCKING_FINDINGS`。
+  - 人工验证：`txtParser.test.ts` 于 2026-08-07 在本地通过。
 - [x] Task 3: IndexedDB 本地书库
-  - Implementation: `eca67ca` (`feat: persist local reader library`) by subagent Carson.
-  - Review: subagent Copernicus returned `NO_BLOCKING_FINDINGS`.
-  - Human verification: `libraryRepository.test.ts` passed locally on 2026-08-07.
+  - 实现：`eca67ca` (`feat: persist local reader library`)，由子智能体 Carson 完成。
+  - 评审：子智能体 Copernicus 返回 `NO_BLOCKING_FINDINGS`。
+  - 人工验证：`libraryRepository.test.ts` 于 2026-08-07 在本地通过。
 - [x] Task 4: SpoilerGuard 防剧透上下文
-  - Implementation: `9c50758` (`feat: enforce spoiler-safe context`) by subagent Linnaeus.
-  - Human/Codex fix: `0b66009` (`fix: restore readable spoiler guard rules`) restored readable Chinese rules and tests.
-  - Human verification: `spoilerGuard.test.ts` passed locally on 2026-08-07.
+  - 实现：`9c50758` (`feat: enforce spoiler-safe context`)，由子智能体 Linnaeus 完成。
+  - 人工/Codex 修复：`0b66009` (`fix: restore readable spoiler guard rules`) 恢复可读中文规则与测试。
+  - 人工验证：`spoilerGuard.test.ts` 于 2026-08-07 在本地通过。
 - [x] Task 5: BGM 类型、内置音轨与推荐规则
-  - Implementation: `7190db7` (`feat: recommend bgm from atmosphere tags`) by subagent Averroes.
-  - Human/Codex fix: `cf9798f` (`fix: align bgm metadata with atmosphere scale`) aligned built-in metadata with Chinese atmosphere tags and 0-1 scoring scale.
-  - Human verification: `bgmMatcher.test.ts` passed locally on 2026-08-07.
+  - 实现：`7190db7` (`feat: recommend bgm from atmosphere tags`)，由子智能体 Averroes 完成。
+  - 人工/Codex 修复：`cf9798f` (`fix: align bgm metadata with atmosphere scale`) 将内置元数据对齐到中文氛围标签和 0-1 评分范围。
+  - 人工验证：`bgmMatcher.test.ts` 于 2026-08-07 在本地通过。
 - [x] Task 6: Spring Boot LLM 代理与凭据边界
-  - Implementation: `d9044f0` (`feat: secure llm credentials and proxy requests`) by subagent Heisenberg.
-  - Human/Codex fix: `3a5032e` (`fix: align llm proxy messages and atmosphere scale`) restored readable prompts/messages and aligned atmosphere numbers with the frontend 0-1 scale.
-  - Verification: `mvn test` passed with 11 tests on 2026-08-07.
+  - 实现：`d9044f0` (`feat: secure llm credentials and proxy requests`)，由子智能体 Heisenberg 完成。
+  - 人工/Codex 修复：`3a5032e` (`fix: align llm proxy messages and atmosphere scale`) 恢复可读提示词/消息，并将氛围数值对齐到前端 0-1 范围。
+  - 验证：`mvn test` 于 2026-08-07 通过 11 个测试。
 
-### Current Main-Conversation Frontend Polish
+### 当前主对话前端打磨
 
-- [x] Task 10: Reader polish for BGM queue, real progress, and night mode
-  - Implementation: `2dbb545` (`前端体验良好，初版告成`) by Codex main conversation, no subagent.
-  - Scope: playable BGM previous/next and ended-to-next behavior, scroll-derived chapter/book progress, night reading mode, and documentation updates.
-  - Verification: `cd frontend && npm run test -- App.test.tsx BgmDock.test.tsx` passed locally on 2026-08-11.
-- [x] Task 11: Submission readiness docs and GitLab CI baseline
-  - Implementation: `8197f6c` (`chore: add ci and submission docs`) by Codex main conversation, no subagent.
-  - Scope: root `.gitlab-ci.yml` with required `unit-test` job, README run/key/CI notes, and SPEC alignment for current MVP distribution and credential behavior.
-  - Verification: `cd frontend && npm run test`, `cd frontend && npm run build`, and `cd backend && .\mvnw.cmd test` passed locally on 2026-08-11. Docker and remote GitLab CI must be verified by the user in the target environment.
-- [x] Task 12: Frontend MVP polish and local demo assets
-  - Implementation: `8598026` (`feat: 完善阅读器 BGM 与 TXT 导入体验`) by Codex main conversation, no subagent.
-  - Scope: GB18030 TXT decoding fallback, seven system demo BGM file references, list/repeat-one playback mode, BGM recommendation genre selector polish, removal of no-op settings/lock buttons, `.gitignore` credential hardening, and documentation alignment.
-  - Verification: `cd frontend && npm run test -- BgmDock.test.tsx`, `cd frontend && npm run test`, and `cd frontend && npm run build` passed locally on 2026-08-12.
-- [x] Task 13: Docker Compose distribution setup
-  - Implementation: `40dcf6a` (`添加 Docker Compose 分发配置`) by Codex main conversation, no subagent.
-  - Scope: root `docker-compose.yml`, frontend Nginx image, backend Spring Boot image, Docker ignore files, root `.env.example`, and Docker README notes.
-  - Verification: static repository checks, frontend test/build, and backend tests passed in this Windows worktree. User ran `docker compose up --build` in Ubuntu VM on 2026-08-12; `curl http://localhost:8080/api/health`, `curl -I http://localhost:5173`, and `curl -I http://localhost:5173/api/health` returned successful responses.
+- [x] Task 10：阅读器 BGM 队列、真实进度与夜视模式打磨
+  - 实现：`2dbb545` (`前端体验良好，初版告成`)，由 Codex 主对话完成，未使用子智能体。
+  - 范围：可播放 BGM 上一首/下一首、播放结束后下一首、滚动推导章节/全文进度、夜间阅读模式和文档更新。
+  - 验证：`cd frontend && npm run test -- App.test.tsx BgmDock.test.tsx` 于 2026-08-11 在本地通过。
+- [x] Task 11：提交准备文档与 GitLab CI 基线
+  - 实现：`8197f6c` (`chore: add ci and submission docs`)，由 Codex 主对话完成，未使用子智能体。
+  - 范围：根目录 `.gitlab-ci.yml` 包含要求的 `unit-test` job，README 运行/key/CI 说明，以及 SPEC 中当前 MVP 分发与凭据行为对齐。
+  - 验证：`cd frontend && npm run test`、`cd frontend && npm run build` 和 `cd backend && .\mvnw.cmd test` 于 2026-08-11 在本地通过。Docker 与远端 GitLab CI 需要用户在目标环境验证。
+- [x] Task 12：前端 MVP 打磨与本地演示资源
+  - 实现：`8598026` (`feat: 完善阅读器 BGM 与 TXT 导入体验`)，由 Codex 主对话完成，未使用子智能体。
+  - 范围：GB18030 TXT 解码 fallback、7 个系统演示 BGM 文件引用、列表/单曲循环播放模式、BGM 推荐题材选择器打磨、移除无功能设置/锁定按钮、`.gitignore` 凭据规则加固和文档对齐。
+  - 验证：`cd frontend && npm run test -- BgmDock.test.tsx`、`cd frontend && npm run test` 和 `cd frontend && npm run build` 于 2026-08-12 在本地通过。
+- [x] Task 13：Docker Compose 分发配置
+  - 实现：`40dcf6a` (`添加 Docker Compose 分发配置`)，由 Codex 主对话完成，未使用子智能体。
+  - 范围：根目录 `docker-compose.yml`、前端 Nginx 镜像、后端 Spring Boot 镜像、Docker ignore 文件、根目录 `.env.example` 和 Docker README 说明。
+  - 验证：静态仓库检查、前端测试/构建和后端测试已在当前 Windows worktree 通过。用户于 2026-08-12 在 Ubuntu 虚拟机运行 `docker compose up --build`；`curl http://localhost:8080/api/health`、`curl -I http://localhost:5173` 和 `curl -I http://localhost:5173/api/health` 均返回成功响应。
 
-## Global Constraints
+## 全局约束
 
-### Implemented Refinements
+### 已实现细化项
 
-- BGM recommendation switches still require reader confirmation. Normal player controls now support previous/next, list looping, and repeat-one mode within the playable local/system-audio queue.
-- Built-in BGM metadata lives in `frontend/src/bgm/builtInTracks.ts`. Demo audio should be placed under `frontend/public/bgm/` and referenced by `fileRef: "/bgm/<file>"`.
-- TXT reading now uses strict UTF-8 first and falls back to GB18030 for common GBK/GB2312 web-novel files.
-- Docker Compose distribution is configured at the repository root and was verified in the user's Ubuntu VM on 2026-08-12.
-- Chapter progress is derived from the central reader scroll container. Full-book progress is recalculated from the active segment offset plus the current intra-chapter scroll offset.
-- Night mode is exposed as a separate reader toolbar button after the theme control.
+- BGM 推荐切换仍需要读者确认。普通播放器控件现在支持上一首/下一首、列表循环和单曲循环，并只在可播放的本地/系统音频队列内生效。
+- 内置 BGM 元数据位于 `frontend/src/bgm/builtInTracks.ts`。演示音频应放在 `frontend/public/bgm/` 下，并通过 `fileRef: "/bgm/<file>"` 引用。
+- TXT 阅读现在先严格使用 UTF-8，失败后对常见 GBK/GB2312 网文文件 fallback 到 GB18030。
+- Docker Compose 分发配置位于仓库根目录，并已于 2026-08-12 在用户 Ubuntu 虚拟机中验证。
+- 章节进度由中间正文滚动容器推导。全文进度由当前片段偏移量加章节内滚动偏移量重新计算。
+- 夜视模式作为独立阅读工具栏按钮，放在主题控制之后。
 
 - 第一版只支持 TXT，不支持 EPUB 或 PDF。
 - 小说正文、批注、阅读进度、聊天记录和用户上传 BGM 默认只保存在浏览器本地。
@@ -86,7 +86,7 @@
 
 ---
 
-## File Structure
+## 文件结构
 
 ```text
 NJU-AI4SE-ImmerseRead/
@@ -151,63 +151,63 @@ NJU-AI4SE-ImmerseRead/
   AGENT_LOG.md
 ```
 
-## Current Backend Skeleton Notes
+## 当前后端骨架说明
 
-The backend skeleton already exists under `backend/` and must be treated as user-provided work:
+后端骨架已经存在于 `backend/` 下，必须视为用户提供的既有工作：
 
-- `backend/pom.xml` already uses Spring Boot `4.1.0` and Java `17`; keep those versions unless the project fails to build for a version-specific reason.
-- `backend/src/main/java/cn/immerseread/ImmerseReadApplication.java` already exists.
-- `backend/src/main/java/cn/immerseread/health/HealthController.java` already exists but is empty.
-- `backend/src/main/java/cn/immerseread/llm/` already contains empty placeholders for `LlmController`, `LlmService`, `ChatClient`, DTOs, and some misplaced test placeholders.
-- `backend/src/main/java/cn/immerseread/config/LlmPropertirs.java` exists with a spelling error; rename or replace it with `LlmProperties.java`.
-- Any class named `*Test` currently under `src/main/java` is misplaced and must be moved to `src/test/java` or deleted when the real test class is created.
-- `backend/README.md`, `backend/docker-compose.yml`, and `backend/.env.example` currently exist but are empty; complete or replace them in the relevant tasks.
+- `backend/pom.xml` 已使用 Spring Boot `4.1.0` 和 Java `17`；除非项目因版本问题无法构建，否则保留这些版本。
+- `backend/src/main/java/cn/immerseread/ImmerseReadApplication.java` 已存在。
+- `backend/src/main/java/cn/immerseread/health/HealthController.java` 已存在，但为空。
+- `backend/src/main/java/cn/immerseread/llm/` 已包含 `LlmController`、`LlmService`、`ChatClient`、DTO 和部分位置错误的测试占位类。
+- `backend/src/main/java/cn/immerseread/config/LlmPropertirs.java` 存在拼写错误；需要重命名或替换为 `LlmProperties.java`。
+- 任何当前位于 `src/main/java` 下且名为 `*Test` 的类都是位置错误的测试类，应在创建真实测试类时移动到 `src/test/java` 或删除。
+- `backend/README.md`、`backend/docker-compose.yml` 和 `backend/.env.example` 当前为空；在相关任务中补齐或替换。
 
-## Pre-Flight Environment
+## 预检环境
 
-Before executing Task 1, verify these local tools are available:
+执行 Task 1 前，先确认本地工具可用：
 
-- Node.js 22 or newer: `node --version`. In Codex Desktop, the bundled Node at `C:\Users\JHZ\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe` is acceptable.
-- npm 10 or newer or pnpm 10 or newer: `npm --version` or `pnpm --version`. In this workspace, use bundled pnpm at `C:\Users\JHZ\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd` if system npm is too old.
-- Java 17 or newer: `java --version`.
-- Maven 3.9 or the project Maven wrapper: `mvn --version` or `backend/mvnw --version`.
+- Node.js 22 或更新：`node --version`。在 Codex Desktop 中，可以使用内置 Node：`C:\Users\JHZ\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`。
+- npm 10 或更新，或 pnpm 10 或更新：`npm --version` 或 `pnpm --version`。在本 workspace 中，如果系统 npm 过旧，可使用内置 pnpm：`C:\Users\JHZ\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd`。
+- Java 17 或更新：`java --version`。
+- Maven 3.9 或项目 Maven wrapper：`mvn --version` 或 `backend/mvnw --version`。
 - Git: `git --version`.
 
-If a tool is missing, stop and record the blocker in `AGENT_LOG.md`; do not guess alternate commands. If Maven needs to download dependencies, it may write to the local Maven repository outside the project directory.
+如果缺少工具，停止并在 `AGENT_LOG.md` 记录 blocker；不要猜测替代命令。如果 Maven 需要下载依赖，它可能写入项目目录外的本地 Maven 仓库。
 
 ---
 
 ### Task 1: 项目脚手架与一键命令
 
-**Files:**
+**文件：**
 
-- Create: `frontend/package.json`
-- Create: `frontend/vite.config.ts`
-- Create: `frontend/tsconfig.json`
-- Create: `frontend/index.html`
-- Create: `frontend/src/main.tsx`
-- Create: `frontend/src/app/App.tsx`
-- Create: `frontend/src/app/App.test.tsx`
-- Create: `frontend/src/styles/global.css`
-- Verify: `backend/pom.xml`
-- Modify: `backend/src/main/java/cn/immerseread/ImmerseReadApplication.java`
-- Modify: `backend/src/main/java/cn/immerseread/health/HealthController.java`
-- Create: `backend/src/test/java/cn/immerseread/health/HealthControllerTest.java`
-- Delete if still present: `backend/src/main/java/cn/immerseread/llm/health/HealthControllerTest.java`
-- Modify: `.gitignore`
-- Modify: `backend/.env.example`
-- Modify: `README.md`
+- 新建：`frontend/package.json`
+- 新建：`frontend/vite.config.ts`
+- 新建：`frontend/tsconfig.json`
+- 新建：`frontend/index.html`
+- 新建：`frontend/src/main.tsx`
+- 新建：`frontend/src/app/App.tsx`
+- 新建：`frontend/src/app/App.test.tsx`
+- 新建：`frontend/src/styles/global.css`
+- 验证：`backend/pom.xml`
+- 修改：`backend/src/main/java/cn/immerseread/ImmerseReadApplication.java`
+- 修改：`backend/src/main/java/cn/immerseread/health/HealthController.java`
+- 新建：`backend/src/test/java/cn/immerseread/health/HealthControllerTest.java`
+- 若仍存在则删除：`backend/src/main/java/cn/immerseread/llm/health/HealthControllerTest.java`
+- 修改：`.gitignore`
+- 修改：`backend/.env.example`
+- 修改：`README.md`
 
-**Interfaces:**
+**接口：**
 
-- Produces frontend command: `npm run test`, `npm run build`, `npm run dev`, or equivalent `pnpm test`, `pnpm build`, `pnpm dev` when using pnpm.
-- Produces backend command: `./mvnw test` or `mvn test`.
-- Produces backend endpoint: `GET /api/health`.
-- Produces environment variables: `LLM_PROVIDER`, `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL`; keeps `OPENAI_*` compatibility.
+- 产出前端命令：`npm run test`、`npm run build`、`npm run dev`；使用 pnpm 时可用等价命令 `pnpm test`、`pnpm build`、`pnpm dev`。
+- 产出后端命令：`./mvnw test` 或 `mvn test`。
+- 产出后端接口：`GET /api/health`。
+- 产出环境变量：`LLM_PROVIDER`、`LLM_API_KEY`、`LLM_BASE_URL`、`LLM_MODEL`；保留 `OPENAI_*` 兼容。
 
-- [ ] **Step 1: Create the minimal frontend test harness**
+- [ ] **Step 1：创建最小前端测试框架**
 
-Create only the files needed for Vitest to load a React test:
+只创建 Vitest 加载 React 测试所需的文件：
 
 - `frontend/package.json`
 - `frontend/vite.config.ts`
@@ -216,7 +216,7 @@ Create only the files needed for Vitest to load a React test:
 - `frontend/src/main.tsx`
 - `frontend/src/styles/global.css`
 
-`frontend/package.json` must include these scripts before the first test run:
+第一次运行测试前，`frontend/package.json` 必须包含以下 scripts：
 
 ```json
 {
@@ -230,9 +230,9 @@ Create only the files needed for Vitest to load a React test:
 }
 ```
 
-This is bootstrapping the test runner, not implementing product behavior.
+这是在搭建测试运行器，不是在实现产品行为。
 
-- [ ] **Step 2: Create frontend failing smoke test**
+- [ ] **Step 2：创建前端失败冒烟测试**
 
 ```tsx
 import { render, screen } from "@testing-library/react";
@@ -248,15 +248,15 @@ describe("App", () => {
 });
 ```
 
-- [ ] **Step 3: Run frontend test and verify it fails**
+- [ ] **Step 3：运行前端测试并确认失败**
 
-Run: `cd frontend && npm run test -- App.test.tsx`
+运行：`cd frontend && npm run test -- App.test.tsx`
 
-Expected: FAIL because `App.tsx` does not render the required product shell yet. If the command fails because dependencies are not installed, run `npm install` or `pnpm install`, then repeat the same test command with the chosen package manager.
+预期：FAIL，因为 `App.tsx` 尚未渲染要求的产品外壳。如果命令因依赖未安装而失败，先运行 `npm install` 或 `pnpm install`，再用选定的包管理器重复同一测试命令。
 
-- [ ] **Step 4: Implement minimal App component**
+- [ ] **Step 4：实现最小 App 组件**
 
-Implement `App.tsx`:
+实现 `App.tsx`：
 
 ```tsx
 export function App() {
@@ -269,20 +269,20 @@ export function App() {
 }
 ```
 
-- [ ] **Step 5: Verify backend pom**
+- [ ] **Step 5：验证后端 pom**
 
-Open `backend/pom.xml` and confirm it already contains:
+打开 `backend/pom.xml`，确认它已经包含：
 
-- Spring Boot parent version `4.1.0`.
-- Java version `17`.
+- Spring Boot parent 版本 `4.1.0`。
+- Java 版本 `17`。
 - `spring-boot-starter-webmvc`.
 - `spring-boot-starter-validation`.
 - `spring-boot-starter-webmvc-test`.
 - `spring-boot-starter-validation-test`.
 
-No `pom.xml` edit is required in Task 1 if those dependencies are present. If any dependency is missing, add only the missing dependency needed for `/api/health` and its test.
+如果这些依赖已经存在，Task 1 不需要编辑 `pom.xml`。如果缺少依赖，只添加 `/api/health` 及其测试所需的最小依赖。
 
-- [ ] **Step 6: Create backend failing health test**
+- [ ] **Step 6：创建后端失败健康检查测试**
 
 ```java
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -299,9 +299,9 @@ class HealthControllerTest {
 }
 ```
 
-- [ ] **Step 7: Complete the existing Spring Boot scaffold and health endpoint**
+- [ ] **Step 7：补齐既有 Spring Boot 脚手架和健康检查接口**
 
-Implement `HealthController`:
+实现 `HealthController`：
 
 ```java
 @RestController
@@ -314,19 +314,19 @@ class HealthController {
 }
 ```
 
-Keep the existing Spring Boot `4.1.0` parent in `backend/pom.xml`. Ensure test classes live under `backend/src/test/java`, not `backend/src/main/java`.
+保留 `backend/pom.xml` 中既有的 Spring Boot `4.1.0` parent。确保测试类位于 `backend/src/test/java`，而不是 `backend/src/main/java`。
 
-- [ ] **Step 8: Run scaffold tests**
+- [ ] **Step 8：运行脚手架测试**
 
-Run: `cd frontend && npm run test -- App.test.tsx`
+运行：`cd frontend && npm run test -- App.test.tsx`
 
-Expected: PASS.
+预期：PASS。
 
-Run: `cd backend && mvn test`
+运行：`cd backend && mvn test`
 
-Expected: PASS.
+预期：PASS。
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 9：提交**
 
 ```bash
 git add frontend backend .gitignore README.md
@@ -337,17 +337,17 @@ git commit -m "chore: scaffold ImmerseRead app"
 
 ### Task 2: 领域模型与 TXT 解析器
 
-**Files:**
+**文件：**
 
-- Create: `frontend/src/domain/models.ts`
-- Create: `frontend/src/reader/txtParser.ts`
-- Create: `frontend/src/reader/txtParser.test.ts`
+- 新建：`frontend/src/domain/models.ts`
+- 新建：`frontend/src/reader/txtParser.ts`
+- 新建：`frontend/src/reader/txtParser.test.ts`
 
-**Interfaces:**
+**接口：**
 
-- Produces type: `Book`.
-- Produces type: `Segment`.
-- Produces function: `parseTxtBook(input: ParseTxtBookInput): ParsedBook`.
+- 产出类型：`Book`.
+- 产出类型：`Segment`.
+- 产出函数：`parseTxtBook(input: ParseTxtBookInput): ParsedBook`.
 
 ```ts
 export interface ParseTxtBookInput {
@@ -362,7 +362,7 @@ export interface ParsedBook {
 }
 ```
 
-- [ ] **Step 1: Write parser tests**
+- [ ] **Step 1：编写解析器测试**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -407,13 +407,13 @@ describe("parseTxtBook", () => {
 });
 ```
 
-- [ ] **Step 2: Run parser tests and verify they fail**
+- [ ] **Step 2：运行解析器测试并确认失败**
 
-Run: `cd frontend && npm run test -- txtParser.test.ts`
+运行：`cd frontend && npm run test -- txtParser.test.ts`
 
-Expected: FAIL because `parseTxtBook` is not implemented.
+预期：FAIL，因为 `parseTxtBook` 尚未实现。
 
-- [ ] **Step 3: Implement domain models**
+- [ ] **Step 3：实现领域模型**
 
 ```ts
 export type SegmentType = "chapter" | "chunk";
@@ -444,9 +444,9 @@ export interface Segment {
 }
 ```
 
-- [ ] **Step 4: Implement `parseTxtBook`**
+- [ ] **Step 4：实现 `parseTxtBook`**
 
-Use regexes for:
+使用以下正则：
 
 ```ts
 const CHAPTER_PATTERNS = [
@@ -457,21 +457,21 @@ const CHAPTER_PATTERNS = [
 ];
 ```
 
-Implementation requirements:
+实现要求：
 
-- Use `crypto.randomUUID()` for ids.
-- Remove `.txt` suffix from file name for title.
-- Treat fewer than 2 recognized headings as unreliable.
-- In chunk mode, split near paragraph boundaries before the configured `chunkSize`.
-- Preserve every original character in segment text.
+- 使用 `crypto.randomUUID()` 生成 id。
+- 标题从文件名中去掉 `.txt` 后缀。
+- 识别出的标题少于 2 个时，视为不可靠。
+- chunk 模式下，在配置的 `chunkSize` 之前尽量靠近段落边界切分。
+- 保留片段文本中的每个原始字符。
 
-- [ ] **Step 5: Run parser tests**
+- [ ] **Step 5：运行解析器测试**
 
-Run: `cd frontend && npm run test -- txtParser.test.ts`
+运行：`cd frontend && npm run test -- txtParser.test.ts`
 
-Expected: PASS.
+预期：PASS。
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 6：提交**
 
 ```bash
 git add frontend/src/domain/models.ts frontend/src/reader/txtParser.ts frontend/src/reader/txtParser.test.ts
@@ -482,28 +482,28 @@ git commit -m "feat: parse txt books into readable segments"
 
 ### Task 3: IndexedDB 本地书库
 
-**Files:**
+**文件：**
 
-- Create: `frontend/src/storage/db.ts`
-- Create: `frontend/src/storage/libraryRepository.ts`
-- Create: `frontend/src/storage/libraryRepository.test.ts`
-- Modify: `frontend/package.json`
+- 新建：`frontend/src/storage/db.ts`
+- 新建：`frontend/src/storage/libraryRepository.ts`
+- 新建：`frontend/src/storage/libraryRepository.test.ts`
+- 修改：`frontend/package.json`
 
-**Interfaces:**
+**接口：**
 
-- Consumes: `Book`, `Segment`, `ReadingProgress`, `Annotation`, `ChatMessage`, `AtmosphereProfile`, `BgmTrack`.
-- Produces function: `saveParsedBook(parsed: ParsedBook): Promise<void>`.
-- Produces function: `getBookWithSegments(bookId: string): Promise<BookWithSegments | undefined>`.
-- Produces function: `saveReadingProgress(progress: ReadingProgress): Promise<void>`.
-- Produces function: `getReadingProgress(bookId: string): Promise<ReadingProgress | undefined>`.
+- 消费：`Book`, `Segment`, `ReadingProgress`, `Annotation`, `ChatMessage`, `AtmosphereProfile`, `BgmTrack`.
+- 产出函数：`saveParsedBook(parsed: ParsedBook): Promise<void>`.
+- 产出函数：`getBookWithSegments(bookId: string): Promise<BookWithSegments | undefined>`.
+- 产出函数：`saveReadingProgress(progress: ReadingProgress): Promise<void>`.
+- 产出函数：`getReadingProgress(bookId: string): Promise<ReadingProgress | undefined>`.
 
-- [ ] **Step 1: Add storage dependency**
+- [ ] **Step 1：添加存储依赖**
 
 Install `idb`:
 
-Run: `cd frontend && npm install idb`
+运行：`cd frontend && npm install idb`
 
-- [ ] **Step 2: Write repository tests**
+- [ ] **Step 2：编写仓储测试**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -542,15 +542,15 @@ describe("libraryRepository", () => {
 });
 ```
 
-- [ ] **Step 3: Run repository tests and verify they fail**
+- [ ] **Step 3：运行仓储测试并确认失败**
 
-Run: `cd frontend && npm run test -- libraryRepository.test.ts`
+运行：`cd frontend && npm run test -- libraryRepository.test.ts`
 
-Expected: FAIL because repository functions are not implemented.
+预期：FAIL，因为仓储函数尚未实现。
 
-- [ ] **Step 4: Implement IndexedDB schema**
+- [ ] **Step 4：实现 IndexedDB schema**
 
-Create stores:
+创建 stores：
 
 ```ts
 const DB_NAME = "immerseread";
@@ -558,29 +558,29 @@ const DB_VERSION = 1;
 const STORES = ["books", "segments", "progress", "annotations", "chatMessages", "atmosphereProfiles", "bgmTracks"];
 ```
 
-Use `idb.openDB` and indexes:
+使用 `idb.openDB` 和索引：
 
 - `segments` by `bookId`.
 - `annotations` by `bookId` and `segmentId`.
 - `chatMessages` by `bookId`.
 - `bgmTracks` by `source`.
 
-- [ ] **Step 5: Implement repository functions**
+- [ ] **Step 5：实现仓储函数**
 
-Implementation requirements:
+实现要求：
 
-- `saveParsedBook` writes book and all segments in one transaction.
-- `getBookWithSegments` sorts segments by `index`.
-- `saveReadingProgress` overwrites progress by `bookId`.
-- `getReadingProgress` returns `undefined` when missing.
+- `saveParsedBook` 在一个事务中写入书籍和所有片段。
+- `getBookWithSegments` 按 `index` 排序片段。
+- `saveReadingProgress` 按 `bookId` 覆盖进度。
+- `getReadingProgress` 缺失时返回 `undefined`。
 
-- [ ] **Step 6: Run repository tests**
+- [ ] **Step 6：运行仓储测试**
 
-Run: `cd frontend && npm run test -- libraryRepository.test.ts`
+运行：`cd frontend && npm run test -- libraryRepository.test.ts`
 
-Expected: PASS.
+预期：PASS。
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 7：提交**
 
 ```bash
 git add frontend/package.json frontend/package-lock.json frontend/src/storage
@@ -591,17 +591,17 @@ git commit -m "feat: persist local reader library"
 
 ### Task 4: SpoilerGuard 防剧透上下文
 
-**Files:**
+**文件：**
 
-- Create: `frontend/src/spoiler/spoilerGuard.ts`
-- Create: `frontend/src/spoiler/spoilerGuard.test.ts`
-- Modify: `frontend/src/domain/models.ts`
+- 新建：`frontend/src/spoiler/spoilerGuard.ts`
+- 新建：`frontend/src/spoiler/spoilerGuard.test.ts`
+- 修改：`frontend/src/domain/models.ts`
 
-**Interfaces:**
+**接口：**
 
-- Consumes: `Segment`, `ReadingProgress`.
-- Produces type: `SpoilerRisk = "low" | "high"`.
-- Produces function: `buildAllowedContext(input: BuildAllowedContextInput): AllowedContext`.
+- 消费：`Segment`, `ReadingProgress`.
+- 产出类型：`SpoilerRisk = "low" | "high"`.
+- 产出函数：`buildAllowedContext(input: BuildAllowedContextInput): AllowedContext`.
 
 ```ts
 export interface BuildAllowedContextInput {
@@ -622,7 +622,7 @@ export interface AllowedContext {
 }
 ```
 
-- [ ] **Step 1: Write SpoilerGuard tests**
+- [ ] **Step 1：编写 SpoilerGuard 测试**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -660,30 +660,30 @@ describe("buildAllowedContext", () => {
 });
 ```
 
-- [ ] **Step 2: Run SpoilerGuard tests and verify they fail**
+- [ ] **Step 2：运行 SpoilerGuard 测试并确认失败**
 
-Run: `cd frontend && npm run test -- spoilerGuard.test.ts`
+运行：`cd frontend && npm run test -- spoilerGuard.test.ts`
 
-Expected: FAIL because `buildAllowedContext` is not implemented.
+预期：FAIL，因为 `buildAllowedContext` 尚未实现。
 
-- [ ] **Step 3: Implement `buildAllowedContext`**
+- [ ] **Step 3：实现 `buildAllowedContext`**
 
-Implementation requirements:
+实现要求：
 
-- Sort segments by `startChar`.
-- Trim each segment to `progress.absoluteCharOffset`.
-- Keep at most `maxChars ?? 6000` characters from the end of read-so-far context.
+- 按 `startChar` 排序片段。
+- 将每个片段截断到 `progress.absoluteCharOffset`。
+- 从已读上下文末尾最多保留 `maxChars ?? 6000` 个字符。
 - Detect high-risk questions with keywords: `后来`, `结局`, `真相`, `凶手`, `最终`, `boss`, `背叛`, `死了吗`, `是不是反派`.
-- Include selected text and annotation note only if present.
+- 仅在存在时包含选中文本和批注笔记。
 - Return instruction: `只能基于已读内容回答；不要暗示、确认或引用未读剧情。`
 
-- [ ] **Step 4: Run SpoilerGuard tests**
+- [ ] **Step 4：运行 SpoilerGuard 测试**
 
-Run: `cd frontend && npm run test -- spoilerGuard.test.ts`
+运行：`cd frontend && npm run test -- spoilerGuard.test.ts`
 
-Expected: PASS.
+预期：PASS。
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 5：提交**
 
 ```bash
 git add frontend/src/domain/models.ts frontend/src/spoiler
@@ -694,20 +694,20 @@ git commit -m "feat: enforce spoiler-safe context"
 
 ### Task 5: BGM 类型、内置曲目和推荐算法
 
-**Files:**
+**文件：**
 
-- Create: `frontend/src/bgm/bgmTypes.ts`
-- Create: `frontend/src/bgm/builtInTracks.ts`
-- Create: `frontend/src/bgm/bgmMatcher.ts`
-- Create: `frontend/src/bgm/bgmMatcher.test.ts`
+- 新建：`frontend/src/bgm/bgmTypes.ts`
+- 新建：`frontend/src/bgm/builtInTracks.ts`
+- 新建：`frontend/src/bgm/bgmMatcher.ts`
+- 新建：`frontend/src/bgm/bgmMatcher.test.ts`
 
-**Interfaces:**
+**接口：**
 
-- Produces type: `BgmTrack`.
-- Produces type: `AtmosphereProfile`.
-- Produces function: `recommendBgm(profile: AtmosphereProfile, tracks: BgmTrack[], options?: RecommendOptions): BgmRecommendation[]`.
+- 产出类型：`BgmTrack`.
+- 产出类型：`AtmosphereProfile`.
+- 产出函数：`recommendBgm(profile: AtmosphereProfile, tracks: BgmTrack[], options?: RecommendOptions): BgmRecommendation[]`.
 
-- [ ] **Step 1: Write matcher tests**
+- [ ] **Step 1：编写匹配器测试**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -748,39 +748,39 @@ describe("recommendBgm", () => {
 });
 ```
 
-- [ ] **Step 2: Run matcher tests and verify they fail**
+- [ ] **Step 2：运行匹配器测试并确认失败**
 
-Run: `cd frontend && npm run test -- bgmMatcher.test.ts`
+运行：`cd frontend && npm run test -- bgmMatcher.test.ts`
 
-Expected: FAIL because BGM modules are not implemented.
+预期：FAIL，因为 BGM 模块尚未实现。
 
-- [ ] **Step 3: Implement BGM types and built-in metadata**
+- [ ] **Step 3：实现 BGM 类型与内置元数据**
 
-Create at least these built-in track metadata records:
+至少创建以下内置曲目元数据记录：
 
 - `night-suspense`: 悬疑、夜晚、紧张。
 - `battle-rise`: 战斗、燃、快节奏。
 - `daily-warm`: 日常、轻松、温暖。
 - `sad-memory`: 回忆、伤感、慢节奏。
 
-- [ ] **Step 4: Implement `recommendBgm`**
+- [ ] **Step 4：实现 `recommendBgm`**
 
-Scoring rules:
+评分规则：
 
-- `+3` for each mood overlap.
-- `+2` for each scene overlap.
-- `+1` if tempo matches profile pace.
-- Subtract numeric distance: `abs(energy diff) + abs(darkness diff) + abs(warmth diff)`.
-- Return top 3 recommendations with positive scores.
-- If `lockedTrackId` exists, return an empty list because the user chose not to be interrupted.
+- 每个情绪重叠项 `+3`。
+- 每个场景重叠项 `+2`。
+- tempo 匹配 profile pace 时 `+1`。
+- 扣除数值距离：`abs(energy diff) + abs(darkness diff) + abs(warmth diff)`。
+- 返回分数为正的前 3 个推荐。
+- 如果存在 `lockedTrackId`，返回空列表，因为用户选择不被打扰。
 
-- [ ] **Step 5: Run matcher tests**
+- [ ] **Step 5：运行匹配器测试**
 
-Run: `cd frontend && npm run test -- bgmMatcher.test.ts`
+运行：`cd frontend && npm run test -- bgmMatcher.test.ts`
 
-Expected: PASS.
+预期：PASS。
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 6：提交**
 
 ```bash
 git add frontend/src/bgm
@@ -791,37 +791,37 @@ git commit -m "feat: recommend bgm from atmosphere tags"
 
 ### Task 6: Spring Boot 凭据管理与 LLM 代理
 
-**Files:**
+**文件：**
 
-- Replace: `backend/src/main/java/cn/immerseread/config/LlmPropertirs.java` with `backend/src/main/java/cn/immerseread/config/LlmProperties.java`
-- Create: `backend/src/main/java/cn/immerseread/config/CredentialStore.java`
-- Create: `backend/src/main/java/cn/immerseread/config/EnvironmentCredentialStore.java`
-- Create: `backend/src/main/java/cn/immerseread/config/SystemCredentialStore.java`
-- Create: `backend/src/main/java/cn/immerseread/credentials/CredentialsCommand.java`
-- Modify: `backend/src/main/java/cn/immerseread/llm/LlmController.java`
-- Modify: `backend/src/main/java/cn/immerseread/llm/LlmService.java`
-- Replace: `backend/src/main/java/cn/immerseread/llm/ChatClient.java` with `backend/src/main/java/cn/immerseread/llm/OpenAiChatClient.java` and an interface if needed
-- Create: `backend/src/main/java/cn/immerseread/llm/dto/AtmosphereRequest.java`
-- Create: `backend/src/main/java/cn/immerseread/llm/dto/AtmosphereResponse.java`
-- Create: `backend/src/main/java/cn/immerseread/llm/dto/ChatRequest.java`
-- Create: `backend/src/main/java/cn/immerseread/llm/dto/ChatResponse.java`
-- Create: `backend/src/main/java/cn/immerseread/llm/dto/ErrorResponse.java`
-- Create: `backend/src/test/java/cn/immerseread/llm/LlmControllerTest.java`
-- Create: `backend/src/test/java/cn/immerseread/llm/LlmServiceTest.java`
-- Create: `backend/src/test/java/cn/immerseread/config/CredentialStoreTest.java`
-- Delete if still present: `backend/src/main/java/cn/immerseread/llm/LlmControllerTest.java`
-- Delete if still present: `backend/src/main/java/cn/immerseread/llm/LlmServiceTest.java`
-- Modify: `backend/src/main/java/cn/immerseread/health/HealthController.java`
+- 替换：将 `backend/src/main/java/cn/immerseread/config/LlmPropertirs.java` 替换为 `backend/src/main/java/cn/immerseread/config/LlmProperties.java`
+- 新建：`backend/src/main/java/cn/immerseread/config/CredentialStore.java`
+- 新建：`backend/src/main/java/cn/immerseread/config/EnvironmentCredentialStore.java`
+- 新建：`backend/src/main/java/cn/immerseread/config/SystemCredentialStore.java`
+- 新建：`backend/src/main/java/cn/immerseread/credentials/CredentialsCommand.java`
+- 修改：`backend/src/main/java/cn/immerseread/llm/LlmController.java`
+- 修改：`backend/src/main/java/cn/immerseread/llm/LlmService.java`
+- 替换：将 `backend/src/main/java/cn/immerseread/llm/ChatClient.java` 替换为 `backend/src/main/java/cn/immerseread/llm/OpenAiChatClient.java`，需要时增加接口
+- 新建：`backend/src/main/java/cn/immerseread/llm/dto/AtmosphereRequest.java`
+- 新建：`backend/src/main/java/cn/immerseread/llm/dto/AtmosphereResponse.java`
+- 新建：`backend/src/main/java/cn/immerseread/llm/dto/ChatRequest.java`
+- 新建：`backend/src/main/java/cn/immerseread/llm/dto/ChatResponse.java`
+- 新建：`backend/src/main/java/cn/immerseread/llm/dto/ErrorResponse.java`
+- 新建：`backend/src/test/java/cn/immerseread/llm/LlmControllerTest.java`
+- 新建：`backend/src/test/java/cn/immerseread/llm/LlmServiceTest.java`
+- 新建：`backend/src/test/java/cn/immerseread/config/CredentialStoreTest.java`
+- 若仍存在则删除：`backend/src/main/java/cn/immerseread/llm/LlmControllerTest.java`
+- 若仍存在则删除：`backend/src/main/java/cn/immerseread/llm/LlmServiceTest.java`
+- 修改：`backend/src/main/java/cn/immerseread/health/HealthController.java`
 
-**Interfaces:**
+**接口：**
 
-- Produces endpoint: `POST /api/llm/chat`.
-- Produces endpoint: `POST /api/llm/atmosphere`.
-- Produces Java service: `LlmService.chat(ChatRequest request): ChatResponse`.
-- Produces Java service: `LlmService.analyzeAtmosphere(AtmosphereRequest request): AtmosphereResponse`.
-- Produces credential commands: `credentials set`, `credentials status`, `credentials clear`.
+- 产出接口：`POST /api/llm/chat`.
+- 产出接口：`POST /api/llm/atmosphere`.
+- 产出 Java 服务：`LlmService.chat(ChatRequest request): ChatResponse`.
+- 产出 Java 服务：`LlmService.analyzeAtmosphere(AtmosphereRequest request): AtmosphereResponse`.
+- 产出凭据命令：`credentials set`, `credentials status`, `credentials clear`.
 
-- [ ] **Step 1: Write controller tests**
+- [ ] **Step 1：编写 controller 测试**
 
 ```java
 @WebMvcTest(LlmController.class)
@@ -858,7 +858,7 @@ class LlmControllerTest {
 }
 ```
 
-- [ ] **Step 2: Write service tests**
+- [ ] **Step 2：编写 service 测试**
 
 ```java
 class LlmServiceTest {
@@ -871,7 +871,7 @@ class LlmServiceTest {
 }
 ```
 
-- [ ] **Step 3: Write credential store tests**
+- [ ] **Step 3：编写 credential store 测试**
 
 ```java
 class CredentialStoreTest {
@@ -892,15 +892,15 @@ class CredentialStoreTest {
 }
 ```
 
-- [ ] **Step 4: Run backend tests and verify they fail**
+- [ ] **Step 4：运行后端测试并确认失败**
 
-Run: `cd backend && mvn test`
+运行：`cd backend && mvn test`
 
-Expected: FAIL because LLM classes are not implemented.
+预期：FAIL，因为 LLM 类尚未实现。
 
-- [ ] **Step 5: Implement DTOs**
+- [ ] **Step 5：实现 DTO**
 
-Use Java records or ordinary immutable classes. Prefer records unless Spring Boot `4.1.0` project settings or serialization tests show a compatibility issue:
+使用 Java record 或普通不可变类。除非 Spring Boot `4.1.0` 项目设置或序列化测试显示兼容性问题，否则优先使用 record：
 
 ```java
 public record ChatRequest(
@@ -916,42 +916,42 @@ public record ChatRequest(
 public record ChatResponse(String content, String modelName) {}
 ```
 
-Create analogous atmosphere records with fields from `AtmosphereProfile`.
+创建类似的氛围 record，字段来自 `AtmosphereProfile`。
 
-- [ ] **Step 6: Implement request validation**
+- [ ] **Step 6：实现请求校验**
 
-Rules:
+规则：
 
-- `question` must be non-blank.
-- `allowedContext.length() <= 12000`.
-- `contextStartChar >= 0`.
-- `contextEndChar >= contextStartChar`.
-- On oversized context, return HTTP `413`.
-- On invalid fields, return HTTP `400`.
+- `question` 不得为空。
+- `allowedContext.length() <= 12000`。
+- `contextStartChar >= 0`。
+- `contextEndChar >= contextStartChar`。
+- 上下文超长时返回 HTTP `413`。
+- 字段非法时返回 HTTP `400`。
 
-- [ ] **Step 7: Implement credential stores, `LlmService`, and `OpenAiChatClient`**
+- [ ] **Step 7：实现 credential stores、`LlmService` 和 `OpenAiChatClient`**
 
-Implementation requirements:
+实现要求：
 
-- `LlmProperties` reads `LLM_PROVIDER`, `LLM_API_KEY`, `LLM_BASE_URL`, and `LLM_MODEL`, with `OPENAI_*` compatibility.
-- `CredentialStore` exposes `resolveApiKey()`, `status()`, `set(char[] key)`, and `clear()`.
-- `SystemCredentialStore` is the preferred implementation for local runs. On Windows, it stores `immerseread.openai.api-key` in Windows Credential Manager or a documented Java keyring bridge. If unavailable, it returns a clear unsupported message rather than silently writing plaintext.
-- `EnvironmentCredentialStore` is the Docker/CI fallback and reads environment variables or `.env`-provided values.
-- `CredentialsCommand` supports `credentials set`, `credentials status`, and `credentials clear`; status never prints the key.
-- Remove the misspelled `LlmPropertirs` class after `LlmProperties` is in place.
-- If key is blank, return a disabled-feature response without calling provider.
-- Task 8 close-out adds DeepSeek Chat Completions support so teachers can configure their own provider key without receiving the author's credentials.
-- Chat prompt includes: short answer, casual web-novel buddy tone, and spoiler-safe instruction.
-- Atmosphere prompt asks for structured JSON only.
-- Logs must include request metadata, not raw novel text.
+- `LlmProperties` 读取 `LLM_PROVIDER`、`LLM_API_KEY`、`LLM_BASE_URL` 和 `LLM_MODEL`，并兼容 `OPENAI_*`。
+- `CredentialStore` 暴露 `resolveApiKey()`、`status()`、`set(char[] key)` 和 `clear()`。
+- `SystemCredentialStore` 是本地运行的优先实现。Windows 上应将 `immerseread.openai.api-key` 存入 Windows Credential Manager 或文档化的 Java keyring bridge；如果不可用，返回清晰的未支持信息，而不是静默写入明文。
+- `EnvironmentCredentialStore` 是 Docker/CI 兜底方案，读取环境变量或 `.env` 提供的值。
+- `CredentialsCommand` 支持 `credentials set`、`credentials status` 和 `credentials clear`；status 绝不打印 key。
+- `LlmProperties` 到位后删除拼写错误的 `LlmPropertirs` 类。
+- 如果 key 为空，返回功能不可用响应，不调用供应商。
+- Task 8 收尾增加 DeepSeek Chat Completions 支持，使老师可配置自己的供应商 key，而不需要获取作者凭据。
+- Chat prompt 包含：短回答、轻松网文同好语气和防剧透指令。
+- Atmosphere prompt 只要求结构化 JSON。
+- 日志只记录请求元数据，不记录小说原文。
 
-- [ ] **Step 8: Run backend tests**
+- [ ] **Step 8：运行后端测试**
 
-Run: `cd backend && mvn test`
+运行：`cd backend && mvn test`
 
-Expected: PASS.
+预期：PASS。
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 9：提交**
 
 ```bash
 git add backend
@@ -962,22 +962,22 @@ git commit -m "feat: secure llm credentials and proxy requests"
 
 ### Task 7: 阅读器主流程 UI
 
-**Files:**
+**文件：**
 
-- Modify: `frontend/src/app/App.test.tsx`
-- Modify: `frontend/src/app/App.tsx`
-- Modify: `frontend/src/styles/global.css`
-- Modify: `frontend/src/test/setup.ts`
+- 修改：`frontend/src/app/App.test.tsx`
+- 修改：`frontend/src/app/App.tsx`
+- 修改：`frontend/src/styles/global.css`
+- 修改：`frontend/src/test/setup.ts`
 
-**Interfaces:**
+**接口：**
 
-- Consumes: `parseTxtBook`.
-- Consumes: `saveParsedBook`, `getBookWithSegments`, `saveReadingProgress`.
-- Produces UI states: empty library, import success, reader open.
+- 消费：`parseTxtBook`.
+- 消费：`saveParsedBook`, `getBookWithSegments`, `saveReadingProgress`.
+- 产出 UI 状态：空书库、导入成功、阅读器打开。
 
-- [x] **Step 1: Write UI tests**
+- [x] **Step 1：编写 UI 测试**
 
-Implementation note: Task 7 stayed in `App.tsx` because the current frontend is still a compact shell. Component extraction is deferred until Task 8/9 add real annotation, companion, and BGM behavior.
+实现说明：Task 7 继续保留在 `App.tsx` 中，因为当前前端仍是较紧凑的外壳。组件拆分推迟到 Task 8/9 增加真实批注、书搭子和 BGM 行为之后。
 
 ```tsx
 import { fireEvent, render, screen } from "@testing-library/react";
@@ -1018,52 +1018,52 @@ describe("ReaderView", () => {
 });
 ```
 
-- [x] **Step 2: Run UI tests and verify they fail**
+- [x] **Step 2：运行 UI 测试并确认失败**
 
-Run: `cd frontend && npm run test -- App.test.tsx`
+运行：`cd frontend && npm run test -- App.test.tsx`
 
-Expected: FAIL because the reader workspace and TXT import controls are not implemented.
+预期：FAIL，因为阅读工作台和 TXT 导入控件尚未实现。
 
-- [x] **Step 3: Implement import flow**
+- [x] **Step 3：实现导入流程**
 
-Implementation requirements:
+实现要求：
 
-- File input accepts `.txt`.
+- 文件输入接受 `.txt`。
 - Use `FileReader` or `file.text()` for UTF-8.
-- Provide encoding fallback UI label for GBK as a visible future option, but first implementation may show a clear unsupported-encoding message.
-- Parse file with `parseTxtBook`.
-- Save parsed book with repository.
-- Open the first segment.
+- 为 GBK 编码 fallback 保留可见的未来选项标签；第一版可以先展示清晰的不支持编码提示。
+- 使用 `parseTxtBook` 解析文件。
+- 使用 repository 保存解析后的书籍。
+- 打开第一个片段。
 
-- [x] **Step 4: Implement reader controls**
+- [x] **Step 4：实现阅读控制**
 
-Controls:
+控件：
 
-- Font size decrease/increase buttons.
-- Line height decrease/increase buttons.
-- Theme buttons with `paper`, `night`, `sepia`.
-- Reading width control is deferred until the reader view is extracted; the text column already uses responsive `max-width`.
+- 字号减小/增大按钮。
+- 行距减小/增大按钮。
+- 提供 `paper`、`night`、`sepia` 主题按钮。
+- 阅读宽度控制推迟到 ReaderView 拆分之后；当前文本列已使用响应式 `max-width`。
 
-CSS requirements:
+CSS 要求：
 
-- No viewport-scaled font sizes.
-- No nested cards around reading content.
-- Text column uses `max-width` and responsive padding.
-- Buttons use accessible names.
+- 不使用随视口缩放的字号。
+- 阅读内容周围不使用嵌套卡片。
+- 文本列使用 `max-width` 和响应式 padding。
+- 按钮使用可访问名称。
 
-- [x] **Step 5: Run UI tests**
+- [x] **Step 5：运行 UI 测试**
 
-Verification:
+验证：
 
-- `cd frontend && npm run test -- App.test.tsx` passed with 2 tests.
-- `cd frontend && npm run test` passed with 20 tests.
-- `cd frontend && npm run build` passed.
+- `cd frontend && npm run test -- App.test.tsx` 通过 2 个测试。
+- `cd frontend && npm run test` 通过 20 个测试。
+- `cd frontend && npm run build` 通过。
 
-Run: `cd frontend && npm run test -- App.test.tsx`
+运行：`cd frontend && npm run test -- App.test.tsx`
 
-Expected: PASS.
+预期：PASS。
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 6：提交**
 
 ```bash
 git add PLAN.md AGENT_LOG.md frontend/src/app frontend/src/styles frontend/src/test/setup.ts
@@ -1074,29 +1074,29 @@ git commit -m "feat: build local txt reader flow"
 
 ### Task 8: 批注与书搭子面板集成
 
-**Files:**
+**文件：**
 
-- Create: `frontend/src/annotations/annotationRanges.ts`
-- Create: `frontend/src/annotations/annotationRanges.test.ts`
-- Create: `frontend/src/components/AnnotationToolbar.tsx`
-- Create: `frontend/src/components/AnnotationToolbar.test.tsx`
-- Create: `frontend/src/components/CompanionPanel.tsx`
-- Create: `frontend/src/components/CompanionPanel.test.tsx`
-- Create: `frontend/src/llm/client.ts`
-- Create: `frontend/src/llm/client.test.ts`
-- Modify: `frontend/src/storage/libraryRepository.ts`
-- Modify: `frontend/src/storage/libraryRepository.test.ts`
-- Modify: `frontend/src/app/App.tsx`
-- Modify: `frontend/src/app/App.test.tsx`
-- Modify: `frontend/src/styles/global.css`
+- 新建：`frontend/src/annotations/annotationRanges.ts`
+- 新建：`frontend/src/annotations/annotationRanges.test.ts`
+- 新建：`frontend/src/components/AnnotationToolbar.tsx`
+- 新建：`frontend/src/components/AnnotationToolbar.test.tsx`
+- 新建：`frontend/src/components/CompanionPanel.tsx`
+- 新建：`frontend/src/components/CompanionPanel.test.tsx`
+- 新建：`frontend/src/llm/client.ts`
+- 新建：`frontend/src/llm/client.test.ts`
+- 修改：`frontend/src/storage/libraryRepository.ts`
+- 修改：`frontend/src/storage/libraryRepository.test.ts`
+- 修改：`frontend/src/app/App.tsx`
+- 修改：`frontend/src/app/App.test.tsx`
+- 修改：`frontend/src/styles/global.css`
 
-**Interfaces:**
+**接口：**
 
-- Consumes: `buildAllowedContext`.
-- Produces function: `createAnnotationFromSelection(input: SelectionInput): AnnotationDraft`.
-- Produces function: `sendCompanionChat(request: CompanionChatRequest): Promise<CompanionChatResponse>`.
+- 消费：`buildAllowedContext`.
+- 产出函数：`createAnnotationFromSelection(input: SelectionInput): AnnotationDraft`.
+- 产出函数：`sendCompanionChat(request: CompanionChatRequest): Promise<CompanionChatResponse>`.
 
-- [x] **Step 1: Write annotation range tests**
+- [x] **Step 1：编写批注范围测试**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -1134,15 +1134,15 @@ describe("createAnnotationFromSelection", () => {
 });
 ```
 
-- [x] **Step 2: Run annotation tests and verify they fail**
+- [x] **Step 2：运行批注测试并确认失败**
 
-Run: `cd frontend && npm run test -- annotationRanges.test.ts`
+运行：`cd frontend && npm run test -- annotationRanges.test.ts`
 
-Expected: FAIL because annotation utilities are not implemented.
+预期：FAIL，因为批注工具尚未实现。
 
-- [x] **Step 3: Implement annotation utilities and repository methods**
+- [x] **Step 3：实现批注工具与仓储方法**
 
-Add repository functions:
+新增仓储函数：
 
 ```ts
 export async function saveAnnotation(annotation: Annotation): Promise<void>;
@@ -1152,38 +1152,38 @@ export async function saveChatMessage(message: ChatMessage): Promise<void>;
 export async function listChatMessages(bookId: string): Promise<ChatMessage[]>;
 ```
 
-- [x] **Step 4: Implement CompanionPanel**
+- [x] **Step 4：实现 CompanionPanel**
 
-UI behavior:
+UI 行为：
 
-- Shows local chat messages.
+- 展示本地聊天消息。
 - 输入框占位文案：`和书搭子聊聊当前剧情`.
-- Submit builds spoiler-safe context with `buildAllowedContext`.
-- Calls `/api/llm/chat` through `sendCompanionChat`.
-- Displays disabled message when backend reports missing key.
+- 提交时使用 `buildAllowedContext` 构建防剧透上下文。
+- 通过 `sendCompanionChat` 调用 `/api/llm/chat`。
+- 当后端报告缺少 key 时，展示不可用提示。
 
-- [x] **Step 5: Wire annotation-to-chat action**
+- [x] **Step 5：接入批注转聊天动作**
 
-Behavior:
+行为：
 
-- Selected text can create highlight and note.
-- Annotation toolbar has `问书搭子` button.
-- Button opens CompanionPanel with selected text and note prefilled as context.
-- LLM payload includes `contextStartChar` and `contextEndChar`.
+- 选中文本可以创建高亮和笔记。
+- 批注工具栏包含 `问书搭子` 按钮。
+- 按钮打开 CompanionPanel，并将选中文本和笔记预填为上下文。
+- LLM payload 包含 `contextStartChar` 和 `contextEndChar`。
 
-- [x] **Step 6: Run tests**
+- [x] **Step 6：运行测试**
 
-Verification:
+验证：
 
-- `cd frontend && npm run test -- annotationRanges.test.ts client.test.ts CompanionPanel.test.tsx AnnotationToolbar.test.tsx libraryRepository.test.ts App.test.tsx spoilerGuard.test.ts` passed with 21 tests.
-- `cd frontend && npm run test` passed with 30 tests.
-- `cd frontend && npm run build` passed.
+- `cd frontend && npm run test -- annotationRanges.test.ts client.test.ts CompanionPanel.test.tsx AnnotationToolbar.test.tsx libraryRepository.test.ts App.test.tsx spoilerGuard.test.ts` 通过 21 个测试。
+- `cd frontend && npm run test` 通过 30 个测试。
+- `cd frontend && npm run build` 通过。
 
-Run: `cd frontend && npm run test -- annotationRanges.test.ts spoilerGuard.test.ts`
+运行：`cd frontend && npm run test -- annotationRanges.test.ts spoilerGuard.test.ts`
 
-Expected: PASS.
+预期：PASS。
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 7：提交**
 
 ```bash
 git add frontend/src/annotations frontend/src/components frontend/src/llm frontend/src/storage
@@ -1194,22 +1194,22 @@ git commit -m "feat: add annotations and companion chat"
 
 ### Task 9: 氛围分析与 BGM 播放体验
 
-**Files:**
+**文件：**
 
-- Create: `frontend/src/components/BgmDock.tsx`
-- Create: `frontend/src/components/BgmDock.test.tsx`
-- Modify: `frontend/src/bgm/builtInTracks.ts`
-- Modify: `frontend/src/llm/client.ts`
-- Modify: `frontend/src/storage/libraryRepository.ts`
-- Modify: `frontend/src/components/ReaderView.tsx`
+- 新建：`frontend/src/components/BgmDock.tsx`
+- 新建：`frontend/src/components/BgmDock.test.tsx`
+- 修改：`frontend/src/bgm/builtInTracks.ts`
+- 修改：`frontend/src/llm/client.ts`
+- 修改：`frontend/src/storage/libraryRepository.ts`
+- 修改：`frontend/src/components/ReaderView.tsx`
 
-**Interfaces:**
+**接口：**
 
-- Consumes: `recommendBgm`.
-- Consumes backend endpoint: `POST /api/llm/atmosphere`.
-- Produces UI: current track, recommendation prompt, upload local audio, metadata editing.
+- 消费：`recommendBgm`.
+- 消费后端接口：`POST /api/llm/atmosphere`.
+- 产出 UI：当前曲目、推荐提示、本地音频上传、元数据编辑。
 
-- [x] **Step 1: Write BgmDock component tests**
+- [x] **Step 1：编写 BgmDock 组件测试**
 
 ```tsx
 import { fireEvent, render, screen } from "@testing-library/react";
@@ -1236,59 +1236,59 @@ describe("BgmDock", () => {
 });
 ```
 
-- [x] **Step 2: Run BgmDock tests and verify they fail**
+- [x] **Step 2：运行 BgmDock 测试并确认失败**
 
-Run: `cd frontend && npm run test -- BgmDock.test.tsx`
+运行：`cd frontend && npm run test -- BgmDock.test.tsx`
 
-Expected: FAIL because `BgmDock` is not implemented.
+预期：FAIL，因为 `BgmDock` 尚未实现。
 
-- [x] **Step 3: Implement atmosphere client**
+- [x] **Step 3：实现氛围客户端**
 
-Add function:
+新增函数：
 
 ```ts
 export async function analyzeAtmosphere(segmentId: string, text: string): Promise<AtmosphereProfile>;
 ```
 
-Behavior:
+行为：
 
 - POST to `/api/llm/atmosphere`.
-- On missing key or provider failure, return neutral fallback profile with `moods: ["平静"]`.
+- key 缺失或供应商失败时，返回 `moods: ["平静"]` 的中性兜底 profile。
 
-- [x] **Step 4: Implement BgmDock**
+- [x] **Step 4：实现 BgmDock**
 
-UI behavior:
+UI 行为：
 
-- Shows play/pause.
-- Shows current track title.
-- Shows top recommendation reason.
-- Requires confirmation before switching.
-- Has lock-current-track toggle.
-- Allows local audio upload metadata form for title, moods, scenes, energy, darkness, warmth, tempo.
+- 展示播放/暂停。
+- 展示当前曲名。
+- 展示最高推荐理由。
+- 切换前要求确认。
+- 提供锁定当前曲目的开关。
+- 允许通过表单上传本地音频元数据，包括标题、情绪、场景、能量、黑暗度、温暖度和节奏。
 
-- [x] **Step 5: Wire BGM into ReaderView**
+- [x] **Step 5：将 BGM 接入 ReaderView**
 
-Behavior:
+行为：
 
-- When opening a segment, show existing profile or request atmosphere analysis by user action.
-- Use `recommendBgm` with built-in and uploaded tracks.
-- Store profile and uploaded BGM metadata locally.
-- Do not upload audio blobs to backend.
+- 打开片段时展示已有 profile，或由用户动作触发氛围分析。
+- 对内置曲目和上传曲目使用 `recommendBgm`。
+- 在本地保存 profile 和上传的 BGM 元数据。
+- 不向后端上传音频 Blob。
 
-- [x] **Step 6: Run BGM tests**
+- [x] **Step 6：运行 BGM 测试**
 
-Verification:
+验证：
 
-- `cd frontend && npm run test -- BgmDock.test.tsx client.test.ts libraryRepository.test.ts bgmMatcher.test.ts App.test.tsx AnnotationToolbar.test.tsx CompanionPanel.test.tsx` passed with 25 tests before the local BGM library follow-up.
-- `cd frontend && npm run test -- BgmDock.test.tsx libraryRepository.test.ts App.test.tsx` passed with 17 tests after adding the local BGM library and audio Blob persistence follow-up.
-- `cd frontend && npm run test` passed with 42 tests.
-- `cd frontend && npm run build` passed.
+- 在本地 BGM 曲库后续补充前，`cd frontend && npm run test -- BgmDock.test.tsx client.test.ts libraryRepository.test.ts bgmMatcher.test.ts App.test.tsx AnnotationToolbar.test.tsx CompanionPanel.test.tsx` 通过 25 个测试。
+- 增加本地 BGM 曲库和音频 Blob 持久化后，`cd frontend && npm run test -- BgmDock.test.tsx libraryRepository.test.ts App.test.tsx` 通过 17 个测试。
+- `cd frontend && npm run test` 通过 42 个测试。
+- `cd frontend && npm run build` 通过。
 
-Run: `cd frontend && npm run test -- bgmMatcher.test.ts BgmDock.test.tsx`
+运行：`cd frontend && npm run test -- bgmMatcher.test.ts BgmDock.test.tsx`
 
-Expected: PASS.
+预期：PASS。
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 7：提交**
 
 ```bash
 git add frontend/src/bgm frontend/src/components/BgmDock.tsx frontend/src/components/BgmDock.test.tsx frontend/src/llm frontend/src/storage
@@ -1299,28 +1299,28 @@ git commit -m "feat: add atmosphere-based bgm experience"
 
 ### Task 10: Docker、GitLab CI、冷启动记录和文档
 
-**Files:**
+**文件：**
 
-- Create: `docker-compose.yml`
-- Create: `frontend/Dockerfile`
-- Create: `backend/Dockerfile`
-- Create: `frontend/e2e/reader-flow.spec.ts`
-- Create: `.gitlab-ci.yml`
-- Create: `SPEC.md`
-- Create: `PLAN.md`
-- Create: `SPEC_PROCESS.md`
-- Create: `AGENT_LOG.md`
-- Create: `docs/COLD_START_PROMPT.md`
-- Modify: `README.md`
+- 新建：`docker-compose.yml`
+- 新建：`frontend/Dockerfile`
+- 新建：`backend/Dockerfile`
+- 新建：`frontend/e2e/reader-flow.spec.ts`
+- 新建：`.gitlab-ci.yml`
+- 新建：`SPEC.md`
+- 新建：`PLAN.md`
+- 新建：`SPEC_PROCESS.md`
+- 新建：`AGENT_LOG.md`
+- 新建：`docs/COLD_START_PROMPT.md`
+- 修改：`README.md`
 
-**Interfaces:**
+**接口：**
 
-- Consumes all previous modules.
-- Produces command: `docker compose up --build`.
-- Produces command: `npm run test`, `mvn test`, `npm run e2e`.
-- Produces GitLab CI job: `unit-test`.
+- 消费此前所有模块。
+- 产出命令：`docker compose up --build`.
+- 产出命令：`npm run test`, `mvn test`, `npm run e2e`.
+- 产出 GitLab CI 作业：`unit-test`.
 
-- [ ] **Step 1: Write E2E test**
+- [ ] **Step 1：编写 E2E 测试**
 
 ```ts
 import { test, expect } from "@playwright/test";
@@ -1343,22 +1343,22 @@ test("reader flow uploads txt, creates annotation, and opens companion", async (
 });
 ```
 
-- [ ] **Step 2: Run E2E and verify it fails before Docker wiring is complete**
+- [ ] **Step 2：运行 E2E，并确认在 Docker 接线完成前失败**
 
-Run: `cd frontend && npm run e2e`
+运行：`cd frontend && npm run e2e`
 
-Expected: FAIL because the full app flow is not wired for Playwright yet.
+预期：FAIL，因为完整应用流程尚未接入 Playwright。
 
-- [ ] **Step 3: Add Docker Compose**
+- [ ] **Step 3：添加 Docker Compose**
 
-Requirements:
+要求：
 
-- Frontend service exposes `5173`.
-- Backend service exposes `8080`.
-- Backend reads `.env`.
-- Frontend uses `VITE_API_BASE_URL=http://localhost:8080`.
+- 前端服务暴露 `5173`。
+- 后端服务暴露 `8080`。
+- 后端读取 `.env`。
+- 前端使用 `VITE_API_BASE_URL=http://localhost:8080`。
 
-Compose shape:
+Compose 形态：
 
 ```yaml
 services:
@@ -1377,15 +1377,15 @@ services:
       - backend
 ```
 
-- [ ] **Step 4: Add GitLab CI workflow**
+- [ ] **Step 4：添加 GitLab CI 工作流**
 
-`.gitlab-ci.yml` requirements:
+`.gitlab-ci.yml` 要求：
 
-- Must contain a job named `unit-test`.
-- `unit-test` runs backend tests and frontend tests.
-- If Docker is available in the CI environment, add a separate `docker-build` job to build the distribution image.
+- 必须包含名为 `unit-test` 的 job。
+- `unit-test` 运行后端测试和前端测试。
+- 如果 CI 环境可用 Docker，增加单独的 `docker-build` job 构建分发镜像。
 
-Minimum shape:
+最小形态：
 
 ```yaml
 stages:
@@ -1404,60 +1404,60 @@ unit-test:
     - ./mvnw test
 ```
 
-- [ ] **Step 5: Update README**
+- [ ] **Step 5：更新 README**
 
-README must include:
+README 必须包含：
 
-- 30-second product explanation.
-- Local-first copyright/privacy boundary.
-- Credential setup through system credential manager first, with `.env` as Docker/development fallback and explicit plaintext-risk warning.
+- 30 秒产品说明。
+- 本地优先的版权/隐私边界。
+- 凭据优先通过系统凭据管理器配置，`.env` 作为 Docker/开发 fallback，并明确提示明文风险。
 - `docker compose up --build`.
-- `docker build` and `docker run --env-file .env` examples.
-- Public registry publication steps or the chosen reason it is deferred until final submission.
-- WebUI deployment URL placeholder to be filled before final submission.
-- Test commands.
-- Note that missing API key disables LLM features while local reader still works.
+- `docker build` 和 `docker run --env-file .env` 示例。
+- 公共镜像仓库发布步骤，或说明为何推迟到最终提交。
+- 最终提交前待填写的 WebUI 部署 URL 占位。
+- 测试命令。
+- 说明缺少 API key 时 LLM 功能不可用，但本地阅读仍可运行。
 
-- [ ] **Step 6: Add root process docs**
+- [ ] **Step 6：添加根目录过程文档**
 
-Create `SPEC_PROCESS.md` summarizing:
+创建 `SPEC_PROCESS.md`，总结：
 
-- Brainstorming decisions.
-- Why Spring Boot was chosen.
-- Why MySQL was excluded from first version.
-- Why spoiler prevention is engineering-controlled instead of prompt-only.
-- Cold-start validation procedure and results. Before cold-start has been run, include a clearly marked section: `待冷启动验证后补充`.
+- 头脑风暴决策。
+- 为什么选择 Spring Boot。
+- 为什么第一版不使用 MySQL。
+- 为什么防剧透由工程控制，而不是只依赖提示词。
+- 冷启动验证流程与结果。冷启动尚未执行时，加入清晰标记的 `待冷启动验证后补充` 小节。
 
-Create `AGENT_LOG.md` summarizing:
+创建 `AGENT_LOG.md`，总结：
 
-- Design spec creation.
-- Implementation plan creation.
-- Backend skeleton baseline.
-- Each future implementation task and verification result.
+- 设计规格创建记录。
+- 实现计划创建记录。
+- 后端骨架基线记录。
+- 后续每个实现任务及验证结果。
 
-Create `docs/COLD_START_PROMPT.md` with the exact prompt to paste into a fresh different agent session.
+创建 `docs/COLD_START_PROMPT.md`，写入可粘贴到另一个全新 agent 对话中的完整提示词。
 
-- [ ] **Step 7: Run full verification**
+- [ ] **Step 7：运行完整验证**
 
-Run: `cd frontend && npm run test`
+运行：`cd frontend && npm run test`
 
-Expected: PASS.
+预期：PASS。
 
-Run: `cd frontend && npm run build`
+运行：`cd frontend && npm run build`
 
-Expected: PASS.
+预期：PASS。
 
-Run: `cd backend && mvn test`
+运行：`cd backend && mvn test`
 
-Expected: PASS.
+预期：PASS。
 
-Run: `docker compose config`
+运行：`docker compose config`
 
-Expected: PASS.
+预期：PASS。
 
-Run: `gitlab-ci-local unit-test` if available, otherwise validate `.gitlab-ci.yml` syntax manually and record that CI pass evidence will come from NJU GitLab.
+运行：如果可用，执行 `gitlab-ci-local unit-test`；否则手动验证 `.gitlab-ci.yml` 语法，并记录 CI 通过证据将来自 NJU GitLab。
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 8：提交**
 
 ```bash
 git add docker-compose.yml frontend/Dockerfile backend/Dockerfile frontend/e2e .gitlab-ci.yml SPEC.md PLAN.md SPEC_PROCESS.md AGENT_LOG.md docs/COLD_START_PROMPT.md README.md
@@ -1466,37 +1466,37 @@ git commit -m "chore: add distribution ci and process docs"
 
 ---
 
-### Task 11: Submission Readiness Docs And GitLab CI Baseline
+### Task 11：提交准备文档与 GitLab CI 基线
 
-**Files:**
+**文件：**
 
-- Create: `.gitlab-ci.yml`
-- Modify: `README.md`
-- Modify: `SPEC.md`
-- Modify: `PLAN.md`
-- Modify: `AGENT_LOG.md`
+- 新建：`.gitlab-ci.yml`
+- 修改：`README.md`
+- 修改：`SPEC.md`
+- 修改：`PLAN.md`
+- 修改：`AGENT_LOG.md`
 
-**Interfaces:**
+**接口：**
 
-- Produces GitLab CI job: `unit-test`.
-- Documents local startup commands for `frontend` and `backend`.
-- Documents `LLM_*` key configuration and plaintext `.env` risk.
+- 产出 GitLab CI 作业：`unit-test`.
+- 记录 `frontend` 与 `backend` 的本地启动命令。
+- 记录 `LLM_*` key 配置方式和明文 `.env` 风险。
 
-- [x] **Step 1: Add GitLab CI baseline**
+- [x] **Step 1：添加 GitLab CI 基线**
 
-Add root `.gitlab-ci.yml` with a required `unit-test` job that installs frontend dependencies, runs frontend tests, builds the frontend, and runs backend tests.
+添加根目录 `.gitlab-ci.yml`，包含必需的 `unit-test` job；该 job 安装前端依赖、运行前端测试、构建前端并运行后端测试。
 
-- [x] **Step 2: Update README**
+- [x] **Step 2：更新 README**
 
-Document product scope, local startup, LLM key setup, verification commands, BGM demo audio placement, CI status, Docker deferral, online deployment deferral, and known MVP limits.
+记录产品范围、本地启动、LLM key 配置、验证命令、BGM demo 音频放置方式、CI 状态、Docker 延后验证、线上部署延后说明和已知 MVP 限制。
 
-- [x] **Step 3: Align SPEC With Current Implementation**
+- [x] **Step 3：将 SPEC 与当前实现对齐**
 
-Downgrade unimplemented claims about OS credential manager and Docker Compose from “first version behavior” to “future / VM verification” so the submitted documentation reflects the actual MVP.
+将尚未实现的操作系统凭据管理器和 Docker Compose 声明，从“第一版行为”降级为“未来工作 / 虚拟机验证”，使提交文档反映真实 MVP。
 
-- [x] **Step 4: Run Verification**
+- [x] **Step 4：运行验证**
 
-Run:
+运行：
 
 ```powershell
 cd frontend
@@ -1506,9 +1506,9 @@ cd ../backend
 .\mvnw.cmd test
 ```
 
-Docker verification remains deferred to the author's Ubuntu VM.
+Docker 验证仍延后到作者的 Ubuntu 虚拟机中执行。
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 5：提交**
 
 ```bash
 git add .gitlab-ci.yml README.md SPEC.md PLAN.md AGENT_LOG.md
@@ -1517,9 +1517,9 @@ git commit -m "chore: add ci and submission docs"
 
 ---
 
-## Self-Review
+## 自检
 
-### Spec Coverage
+### SPEC 覆盖
 
 - 问题陈述和目标用户：由 README 与 SPEC 文档覆盖，Task 10 更新 README。
 - 用户故事 1：Task 2 和 Task 7 覆盖 TXT 解析与阅读入口。
@@ -1536,11 +1536,11 @@ git commit -m "chore: add ci and submission docs"
 - 技术选型：Task 1 和 Task 10 固化 React、Spring Boot、IndexedDB 和 Docker。
 - 验收标准：Task 2-10 均包含对应测试和命令。
 
-### Red-Flag Scan
+### 红旗扫描
 
 本计划不包含未完成标记、延期实现说明、笼统错误处理要求或未定义接口。每个任务都有明确文件、接口、测试、实现要求和提交点。
 
-### Type Consistency
+### 类型一致性
 
 - `Book`、`Segment`、`ReadingProgress`、`Annotation`、`ChatMessage`、`AtmosphereProfile`、`BgmTrack` 在前端模型中统一定义或从 BGM 类型模块导出。
 - `buildAllowedContext` 输出的 `contextStartChar`、`contextEndChar` 和 `spoilerRisk` 与后端 `ChatRequest` 字段一致。

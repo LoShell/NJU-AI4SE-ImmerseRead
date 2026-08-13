@@ -154,10 +154,10 @@
 
 据此修订：
 
-- 在 `PLAN.md` 增加 `Pre-Flight Environment`，明确 Node.js、npm、Java、Maven、Git 前置要求。
-- 将 Task 1 的前端步骤改为：先创建最小测试 harness，再写失败测试，再实现 `App.tsx`。
-- 将 `backend/pom.xml` 从“Modify”改为“Verify”，并列出 Task 1 需要确认的具体依赖。
-- 保留 misplaced test 的清理要求，但明确为“存在则删除/迁移”。
+- 在 `PLAN.md` 增加“预检环境”，明确 Node.js、npm、Java、Maven、Git 前置要求。
+- 将 Task 1 的前端步骤改为：先创建最小测试框架，再写失败测试，再实现 `App.tsx`。
+- 将 `backend/pom.xml` 从“修改”改为“验证”，并列出 Task 1 需要确认的具体依赖。
+- 保留位置错误测试类的清理要求，但明确为“存在则删除/迁移”。
 
 ## 7. 初步反思
 
