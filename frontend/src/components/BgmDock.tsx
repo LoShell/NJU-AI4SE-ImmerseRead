@@ -239,7 +239,7 @@ export function BgmDock({
                 onChange={(event) => onBookGenreChange?.(event.target.value)}
               >
                 <option value="通用">通用</option>
-                <option value="古言">古言</option>
+                <option value="古风">古风</option>
                 <option value="仙侠">仙侠</option>
                 <option value="悬疑">悬疑</option>
                 <option value="都市">都市</option>

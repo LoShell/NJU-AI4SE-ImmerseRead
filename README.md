@@ -30,6 +30,16 @@ NJU-AI4SE-ImmerseRead/
   .env.example     Docker/后端环境变量示例，不包含真实 key
 ```
 
+## Demo 文件
+
+仓库提供一个自写 TXT demo，便于老师或测试者不准备额外小说文件也能快速体验导入、章节解析、阅读进度、批注和书搭子：
+
+```text
+docs/demo-txt/故梦.txt
+```
+
+该文件仅用于课程演示。真实使用时，读者应上传自己本地拥有阅读权限的 TXT 小说；项目不会提供联网小说下载。
+
 ## 快速启动
 
 推荐先启动后端，再启动前端。前端开发服务器已经配置 `/api` 代理，因此浏览器只需要访问前端地址即可。
@@ -96,7 +106,7 @@ npm run dev
 ```powershell
 cd backend
 
-# 设置api key,以模型deepseek v4 flash为例
+# 设置LLM key,以模型deepseek v4 flash为例
 $env:LLM_PROVIDER="deepseek"
 $env:LLM_API_KEY="你的 DeepSeek key"
 $env:LLM_BASE_URL="https://api.deepseek.com"
