@@ -15,6 +15,11 @@ export interface BookWithSegments {
   segments: Segment[];
 }
 
+export async function listBooks(): Promise<Book[]> {
+  const db = await getDb();
+  return (await db.getAll("books")).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
 export async function saveParsedBook(parsed: ParsedBook): Promise<void> {
   const db = await getDb();
   const tx = db.transaction(["books", "segments"], "readwrite");

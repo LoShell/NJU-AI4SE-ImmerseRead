@@ -44,7 +44,7 @@ describe("sendCompanionChat", () => {
     expect(response).toEqual({ content: "Stay with what you have read.", modelName: "test-model" });
   });
 
-  it("returns a disabled response when the backend rejects the request", async () => {
+  it("reports HTTP errors instead of disguising them as missing configuration", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => new Response(JSON.stringify({ message: "missing key" }), { status: 503 }))
@@ -60,10 +60,7 @@ describe("sendCompanionChat", () => {
         contextEndChar: 7,
         spoilerRisk: "low"
       })
-    ).resolves.toEqual({
-      content: "LLM is not available yet. You can keep reading locally.",
-      modelName: "disabled"
-    });
+    ).rejects.toThrow("HTTP 503");
   });
 });
 
@@ -117,17 +114,9 @@ describe("analyzeAtmosphere", () => {
     expect(profile.createdAt).toEqual(expect.any(String));
   });
 
-  it("returns a neutral local profile when the backend is unavailable", async () => {
+  it("reports atmosphere service errors", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response("missing key", { status: 503 })));
 
-    await expect(analyzeAtmosphere("segment-1", "text")).resolves.toEqual(
-      expect.objectContaining({
-        segmentId: "segment-1",
-        moods: ["平静"],
-        scenes: ["阅读"],
-        pace: "medium",
-        modelName: "disabled"
-      })
-    );
+    await expect(analyzeAtmosphere("segment-1", "text")).rejects.toThrow("HTTP 503");
   });
 });

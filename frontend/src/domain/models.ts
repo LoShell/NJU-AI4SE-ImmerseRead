@@ -36,6 +36,9 @@ export interface ReadingProgress {
   charOffsetInSegment: number;
   absoluteCharOffset: number;
   updatedAt: string;
+  /** Observed text only. Missing on legacy bookmarks; never infer prior chapters. */
+  readRanges?: Array<{ start: number; end: number }>;
+  scrollRatio?: number;
 }
 
 export interface Annotation {
@@ -61,6 +64,7 @@ export interface ChatMessage {
   annotationId?: string;
   contextStartChar: number;
   contextEndChar: number;
+  contextRanges?: Array<{ start: number; end: number }>;
   spoilerPolicy: SpoilerPolicy;
   createdAt: string;
 }

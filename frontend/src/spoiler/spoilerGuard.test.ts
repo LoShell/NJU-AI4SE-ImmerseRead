@@ -20,10 +20,22 @@ const makeProgress = (overrides: Partial<ReadingProgress>): ReadingProgress => (
   segmentId: overrides.segmentId ?? "segment-1",
   charOffsetInSegment: overrides.charOffsetInSegment ?? 0,
   absoluteCharOffset: overrides.absoluteCharOffset ?? 0,
-  updatedAt: overrides.updatedAt ?? "2026-08-07T00:00:00.000Z"
+  updatedAt: overrides.updatedAt ?? "2026-08-07T00:00:00.000Z",
+  readRanges: overrides.readRanges
 });
 
 describe("buildAllowedContext", () => {
+  it("does not infer skipped chapters or admit unseen selection metadata", () => {
+    const segments = [makeSegment({ id: "one", startChar: 0, endChar: 5, text: "hello" }),
+      makeSegment({ id: "two", startChar: 5, endChar: 11, text: "SECRET" }),
+      makeSegment({ id: "three", startChar: 11, endChar: 16, text: "world" })];
+    const progress = makeProgress({ segmentId: "three", absoluteCharOffset: 16, charOffsetInSegment: 5,
+      readRanges: [{ start: 0, end: 5 }, { start: 11, end: 16 }] });
+    const context = buildAllowedContext({ segments, progress, question: "发生什么了", selectedText: "SECRET", annotationNote: "未来线索" });
+    expect(context.text).toBe("helloworld");
+    const early = buildAllowedContext({ segments, progress: { ...progress, absoluteCharOffset: 3 }, question: "回看" });
+    expect(early.text).toBe("hel");
+  });
   it("excludes unread future text after progress", () => {
     const readText = "前文线索一二三四五";
     const unreadText = "未读真相：凶手是乙。";

@@ -49,7 +49,8 @@ export function buildAllowedContext(input: BuildAllowedContextInput): AllowedCon
   const contextParts = buildReadSoFarParts(sortedSegments, input.progress);
   const trimmed = trimContextParts(contextParts, maxChars);
   const readContext = trimmed.map((part) => part.text).join("");
-  const metadata = buildMetadata(input.selectedText, input.annotationNote);
+  const selectionIsVisible = !input.selectedText || contextParts.some((part) => part.text.includes(input.selectedText!));
+  const metadata = selectionIsVisible ? buildMetadata(input.selectedText, input.annotationNote) : [];
 
   return {
     text: metadata.length > 0 ? `${metadata.join("\n")}\n\n${readContext}` : readContext,
@@ -61,6 +62,14 @@ export function buildAllowedContext(input: BuildAllowedContextInput): AllowedCon
 }
 
 function buildReadSoFarParts(segments: Segment[], progress: ReadingProgress): ContextPart[] {
+  if (progress.readRanges) {
+    return segments.flatMap((segment) => progress.readRanges!.flatMap((range) => {
+      if (segment.bookId !== progress.bookId) return [];
+      const start = Math.max(segment.startChar, range.start);
+      const end = Math.min(segment.endChar, range.end, progress.absoluteCharOffset);
+      return end > start ? [{ text: segment.text.slice(start - segment.startChar, end - segment.startChar), startChar: start, endChar: end }] : [];
+    }));
+  }
   return segments.flatMap((segment) => {
     const allowedEndChar = getAllowedEndChar(segment, progress);
 

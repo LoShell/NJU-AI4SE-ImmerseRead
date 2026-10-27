@@ -1,0 +1,52 @@
+/* Integration-only rules. Layout, colors and typography come from the Figma export. */
+html, body, #root { height: 100%; margin: 0; }
+body { overflow: hidden; }
+button, label:has(input[type=file]) { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; }
+button:disabled { cursor: default; opacity: .4; }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid #c17a3c; outline-offset: 3px; }
+.figma-reader { height: 100dvh; }
+.reading-content { overflow-wrap: anywhere; }
+.reading-content ::selection { background: rgba(193,122,60,.28); }
+.integration-dialog input { color: inherit; }
+.reader-workspace { position: relative; }
+.reader-action { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 6px; border: 1px solid transparent; border-radius: 12px; background: transparent; color: var(--reader-text); font: inherit; font-size: 12px; line-height: 18px; transition: background .15s, color .15s, border-color .15s, opacity .15s; }
+.reader-action-icon { width: 30px; height: 30px; color: var(--reader-muted); }
+.reader-action-text { padding: 7px 12px; border-color: var(--reader-border); background: var(--reader-card); }
+.reader-action:hover:not(:disabled) { background: rgba(193,122,60,.12); color: #c17a3c; border-color: rgba(193,122,60,.2); }
+.reader-action-primary { background: #c17a3c; color: #fff8f0; border-color: #c17a3c; }
+.reader-action-primary:hover:not(:disabled) { background: #b16c32; color: #fff8f0; border-color: #b16c32; }
+.reader-action-danger:hover:not(:disabled) { color: #c0392b; background: rgba(192,57,43,.08); border-color: rgba(192,57,43,.16); }
+.reader-action-danger.reader-action-text { background: rgba(192,57,43,.08); color: #c0392b; border-color: rgba(192,57,43,.2); }
+.reader-hint { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; font-size: 12px; line-height: 1.75; color: var(--reader-muted); background: var(--reader-card); border: 1px solid var(--reader-border); border-radius: 12px; }
+.reader-hint > svg { margin-top: 4px; flex-shrink: 0; color: #c17a3c; }
+.reader-dialog-backdrop { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; background: #0004; }
+.reader-dialog-backdrop:has(.reader-dialog-compact) { z-index: 80; }
+.reader-dialog { width: 100%; max-width: 448px; max-height: 80dvh; overflow-y: auto; padding: 20px; color: var(--reader-text); background: var(--reader-surface); border: 1px solid var(--reader-border); border-radius: 16px; box-shadow: 0 18px 50px #0002; }
+.reader-dialog-compact { max-width: 360px; }
+.reader-dialog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
+.reader-dialog-header h2 { font-size: 14px; font-weight: 500; }
+.reader-dialog-description { color: var(--reader-muted); font-size: 12px; line-height: 1.8; }
+.reader-dialog-quote { margin-block: 14px; padding: 12px; color: #c17a3c; background: var(--reader-card); border: 1px solid var(--reader-border); border-radius: 12px; font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; }
+.reader-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.reader-library-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px; margin-bottom: 8px; border: 1px solid var(--reader-border); border-radius: 12px; background: var(--reader-card); }
+.reader-library-row > svg { color: #c17a3c; flex-shrink: 0; }
+.reader-library-row .reader-library-meta { flex: 1; min-width: 0; text-align: left; }
+.reader-library-title { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reader-library-detail { margin-top: 3px; color: var(--reader-muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reader-field { display: block; margin-block: 14px; font-size: 12px; color: var(--reader-muted); }
+.reader-field input { display: block; width: 100%; margin-top: 8px; padding: 9px 12px; border: 1px solid var(--reader-border); border-radius: 12px; background: var(--reader-card); color: var(--reader-text); outline: none; }
+.reader-upload { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 10px 12px; margin-bottom: 16px; border: 1px dashed rgba(193,122,60,.45); border-radius: 12px; color: #c17a3c; background: rgba(193,122,60,.08); font-size: 12px; cursor: pointer; transition: background .15s; }
+.reader-upload:hover { background: rgba(193,122,60,.14); }
+.reader-upload input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.reader-upload:focus-within { outline: 2px solid #c17a3c; outline-offset: 3px; }
+.reader-toast { position: fixed; top: 56px; left: 50%; transform: translateX(-50%); z-index: 90; display: flex; gap: 12px; align-items: center; max-width: min(90vw, 480px); padding: 8px 10px 8px 14px; background: var(--reader-surface); color: var(--reader-text); border: 1px solid var(--reader-border); border-radius: 12px; box-shadow: 0 8px 24px #0001; font-size: 12px; line-height: 1.75; }
+@media (max-width: 767px) {
+  .reader-topbar { gap: 6px; padding-inline: 10px; }
+  .reader-topbar > span { display: none; }
+  .reader-topbar > div:nth-last-of-type(2) { display: none; }
+  .figma-library, .figma-companion { z-index: 35; }
+  .figma-library[style*="232px"] { position: absolute; inset: 0 auto 0 0; box-shadow: 10px 0 30px #0002; }
+  .figma-companion[style*="296px"] { position: absolute; inset: 0 0 0 auto; width: min(296px, calc(100vw - 40px)) !important; box-shadow: -10px 0 30px #0002; }
+  .reading-content { padding-inline: 20px; padding-top: 28px; }
+}

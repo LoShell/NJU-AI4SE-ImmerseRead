@@ -16,39 +16,37 @@ export interface CompanionChatResponse {
   modelName: string;
 }
 
-const DISABLED_RESPONSE: CompanionChatResponse = {
-  content: "LLM is not available yet. You can keep reading locally.",
-  modelName: "disabled"
-};
-
-export async function sendCompanionChat(request: CompanionChatRequest): Promise<CompanionChatResponse> {
+export async function sendCompanionChat(request: CompanionChatRequest, signal?: AbortSignal): Promise<CompanionChatResponse> {
   try {
     const response = await fetch("/api/llm/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
+      signal
     });
 
     if (!response.ok) {
-      return DISABLED_RESPONSE;
+      throw new Error(`聊天请求失败（HTTP ${response.status}），请检查后端配置后重试。`);
     }
 
     return (await response.json()) as CompanionChatResponse;
-  } catch {
-    return DISABLED_RESPONSE;
+  } catch (error) {
+    if (error instanceof Error && (error.name === "AbortError" || error.message.startsWith("聊天请求失败"))) throw error;
+    throw new Error("无法连接聊天服务，请确认后端已启动。");
   }
 }
 
-export async function analyzeAtmosphere(segmentId: string, text: string): Promise<AtmosphereProfile> {
+export async function analyzeAtmosphere(segmentId: string, text: string, signal?: AbortSignal): Promise<AtmosphereProfile> {
   try {
     const response = await fetch("/api/llm/atmosphere", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ segmentId, text })
+      body: JSON.stringify({ segmentId, text }),
+      signal
     });
 
     if (!response.ok) {
-      return createNeutralAtmosphereProfile(segmentId);
+      throw new Error(`氛围分析失败（HTTP ${response.status}），请稍后重试。`);
     }
 
     const profile = (await response.json()) as Omit<AtmosphereProfile, "createdAt"> & {
@@ -60,24 +58,8 @@ export async function analyzeAtmosphere(segmentId: string, text: string): Promis
       segmentId,
       createdAt: profile.createdAt ?? new Date().toISOString()
     };
-  } catch {
-    return createNeutralAtmosphereProfile(segmentId);
+  } catch (error) {
+    if (error instanceof Error && (error.name === "AbortError" || error.message.startsWith("氛围分析失败"))) throw error;
+    throw new Error("无法连接氛围服务，请确认后端已启动。");
   }
-}
-
-function createNeutralAtmosphereProfile(segmentId: string): AtmosphereProfile {
-  return {
-    segmentId,
-    moods: ["平静"],
-    scenes: ["阅读"],
-    pace: "medium",
-    intensity: 0.3,
-    energy: 0.3,
-    darkness: 0.2,
-    warmth: 0.4,
-    tags: ["平静"],
-    chapterEndPrompt: "先保持当前阅读节奏。",
-    modelName: "disabled",
-    createdAt: new Date().toISOString()
-  };
 }
