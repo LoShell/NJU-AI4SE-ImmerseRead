@@ -1,3 +1,4 @@
+import { createId } from "../utils/createId";
 import { useState, type FormEvent } from "react";
 import type { ChatMessage, ReadingProgress, Segment } from "../domain/models";
 import { sendCompanionChat } from "../llm/client";
@@ -122,7 +123,7 @@ function createChatMessage(input: {
   contextEndChar: number;
 }): ChatMessage {
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
     bookId: input.bookId,
     segmentId: input.segmentId,
     role: input.role,

@@ -1,3 +1,4 @@
+import { createId } from "../utils/createId";
 import type { Book, Segment } from "../domain/models";
 
 export interface ParseTxtBookInput {
@@ -22,7 +23,7 @@ const CHAPTER_PATTERNS = [
 ];
 
 export function parseTxtBook(input: ParseTxtBookInput): ParsedBook {
-  const bookId = crypto.randomUUID();
+  const bookId = createId();
   const now = new Date().toISOString();
   const book: Book = {
     id: bookId,
@@ -160,7 +161,7 @@ function createSegment(input: {
   parseConfidence: Segment["parseConfidence"];
 }): Segment {
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
     bookId: input.bookId,
     index: input.index,
     title: input.title,

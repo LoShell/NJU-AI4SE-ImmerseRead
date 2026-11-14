@@ -1,3 +1,4 @@
+import { createId } from "../utils/createId";
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type RefObject } from "react";
 import type { Annotation, Book, ChatMessage, ReadingProgress, Segment } from "../domain/models";
 import type { BgmTrack } from "../bgm/bgmTypes";
@@ -192,7 +193,7 @@ export function useReader(contentRef: RefObject<HTMLDivElement | null>, scrollRe
     const segment = activeSegment, ticket = generation.current;
     if (segment.text.slice(draft.start, draft.end) !== draft.text) { setNotice("选区已变化，请重新选择正文。"); return false; }
     const now = new Date().toISOString();
-    const annotation: Annotation = { id: crypto.randomUUID(), bookId: segment.bookId, segmentId: segment.id,
+    const annotation: Annotation = { id: createId(), bookId: segment.bookId, segmentId: segment.id,
       startChar: draft.start, endChar: draft.end, selectedText: draft.text, note: draft.note.trim(), color: "amber", createdAt: now, updatedAt: now };
     try {
       await library.saveAnnotation(annotation);
@@ -213,7 +214,7 @@ export function useReader(contentRef: RefObject<HTMLDivElement | null>, scrollRe
     setIsSending(true);
     try {
       const allowed = buildAllowedContext({ segments: source.segments, progress: progressRef.current!, question, selectedText });
-      const makeMessage = (role: "user" | "assistant", content: string): ChatMessage => ({ id: crypto.randomUUID(), bookId: segment.bookId,
+      const makeMessage = (role: "user" | "assistant", content: string): ChatMessage => ({ id: createId(), bookId: segment.bookId,
         segmentId: segment.id, role, content, contextStartChar: allowed.contextStartChar, contextEndChar: allowed.contextEndChar,
         contextRanges: (progressRef.current?.readRanges ?? []).map((range) => ({ start: Math.max(range.start, allowed.contextStartChar), end: Math.min(range.end, allowed.contextEndChar) })).filter((range) => range.end > range.start),
         spoilerPolicy: "strict", createdAt: new Date().toISOString() });
@@ -282,7 +283,7 @@ export function useReader(contentRef: RefObject<HTMLDivElement | null>, scrollRe
     if (!file.type.startsWith("audio/") && !/\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(file.name)) { setNotice("请选择支持的音频文件。"); return; }
     if (file.size > 100 * 1024 * 1024) { setNotice("请选择不超过 100 MB 的音频。"); return; }
     try {
-      const track: BgmTrack = { id: crypto.randomUUID(), title: file.name.replace(/\.[^.]+$/, ""), source: "user-uploaded", audioBlob: file,
+      const track: BgmTrack = { id: createId(), title: file.name.replace(/\.[^.]+$/, ""), source: "user-uploaded", audioBlob: file,
         moods: tags.split(/[,，、\s]+/).filter(Boolean), scenes: [], energy: 0.4, darkness: 0.4, warmth: 0.4, tempo: "medium", createdAt: new Date().toISOString() };
       await library.saveBgmTrack(track);
       const url = URL.createObjectURL(file); urls.current.add(url);
